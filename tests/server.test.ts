@@ -83,14 +83,23 @@ describe('CostManagementMCPServer', () => {
 
   describe('getTools', () => {
     it('should return all available tools', () => {
+      mockConfig.getProviderConfig.mockReturnValue({
+        enabled: true,
+        credentials: { apiKey: 'test-key' },
+      });
+
       server = new CostManagementMCPServer();
       const tools = (server as any).getTools();
 
-      expect(tools).toHaveLength(3);
+      expect(tools).toHaveLength(7);
       expect(tools.map((t: any) => t.name)).toEqual([
         'cost.get',
         'provider.list',
         'provider.balance',
+        'openai.costs',
+        'aws.costs',
+        'anthropic.usage',
+        'provider.compare',
       ]);
 
       const costGetTool = tools.find((t: any) => t.name === 'cost.get');

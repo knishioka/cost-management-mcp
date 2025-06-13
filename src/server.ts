@@ -1,9 +1,10 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { 
+import type {
+  Tool} from '@modelcontextprotocol/sdk/types.js';
+import {
   CallToolRequestSchema,
-  ListToolsRequestSchema,
-  Tool,
+  ListToolsRequestSchema
 } from '@modelcontextprotocol/sdk/types.js';
 import { getConfig } from './common/config';
 import { initializeCache } from './common/cache';
@@ -13,6 +14,14 @@ import type { ProviderClient } from './common/types';
 import { getCostTool } from './tools/getCosts';
 import { listProvidersTool } from './tools/listProviders';
 import { checkBalanceTool } from './tools/checkBalance';
+import { getOpenAICostsTool } from './tools/getOpenAICosts';
+import { getAWSCostsTool } from './tools/getAWSCosts';
+import { getAnthropicUsageTool } from './tools/getAnthropicUsage';
+import { compareProvidersTool } from './tools/compareProviders';
+import { AWSCostClient } from './providers/aws';
+import { GCPCostClient } from './providers/gcp';
+import { OpenAICostClient } from './providers/openai';
+import { AnthropicCostClient } from './providers/anthropic';
 
 export class CostManagementMCPServer {
   private server: Server;
@@ -62,21 +71,17 @@ export class CostManagementMCPServer {
 
     switch (providerName) {
       case 'aws':
-        const { AWSCostClient } = require('./providers/aws');
         return new AWSCostClient(providerConfig.credentials);
-      
+
       case 'gcp':
-        const { GCPCostClient } = require('./providers/gcp');
         return new GCPCostClient(providerConfig.credentials);
-      
+
       case 'openai':
-        const { OpenAICostClient } = require('./providers/openai');
         return new OpenAICostClient(providerConfig.credentials);
-      
+
       case 'anthropic':
-        const { AnthropicCostClient } = require('./providers/anthropic');
         return new AnthropicCostClient(providerConfig.credentials);
-      
+
       default:
         logger.warn(`Provider ${providerName} not implemented yet`);
         return null;
@@ -95,32 +100,48 @@ export class CostManagementMCPServer {
         switch (name) {
           case 'cost.get':
             return await getCostTool(args, this.providers);
-          
+
           case 'provider.list':
             return await listProvidersTool(this.providers);
-          
+
           case 'provider.balance':
             return await checkBalanceTool(args, this.providers);
-          
+
+          case 'openai.costs':
+            return await getOpenAICostsTool(args, this.providers);
+
+          case 'aws.costs':
+            return await getAWSCostsTool(args, this.providers);
+
+          case 'anthropic.usage':
+            return await getAnthropicUsageTool(args, this.providers);
+
+          case 'provider.compare':
+            return await compareProvidersTool(args, this.providers);
+
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
       } catch (error) {
         const handledError = handleError(error);
         logger.error('Tool execution failed', handledError);
-        
+
         return {
           content: [
             {
               type: 'text',
-              text: JSON.stringify({
-                success: false,
-                error: {
-                  code: handledError.code,
-                  message: handledError.message,
-                  details: handledError.details,
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error: {
+                    code: handledError.code,
+                    message: handledError.message,
+                    details: handledError.details,
+                  },
                 },
-              }, null, 2),
+                null,
+                2,
+              ),
             },
           ],
         };
@@ -187,16 +208,136 @@ export class CostManagementMCPServer {
           required: ['provider'],
         },
       },
+      {
+        name: 'openai.costs',
+        description: 'Get detailed OpenAI costs with model breakdown and token usage',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            startDate: {
+              type: 'string',
+              description: 'Start date in YYYY-MM-DD format',
+            },
+            endDate: {
+              type: 'string',
+              description: 'End date in YYYY-MM-DD format',
+            },
+            groupByModel: {
+              type: 'boolean',
+              description: 'Group costs by model',
+              default: false,
+            },
+            includeTokenUsage: {
+              type: 'boolean',
+              description: 'Include token usage statistics',
+              default: true,
+            },
+          },
+          required: ['startDate', 'endDate'],
+        },
+      },
+      {
+        name: 'aws.costs',
+        description: 'Get detailed AWS costs with service breakdown and optimization tips',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            startDate: {
+              type: 'string',
+              description: 'Start date in YYYY-MM-DD format',
+            },
+            endDate: {
+              type: 'string',
+              description: 'End date in YYYY-MM-DD format',
+            },
+            granularity: {
+              type: 'string',
+              enum: ['daily', 'monthly', 'total'],
+              description: 'Cost aggregation granularity',
+              default: 'daily',
+            },
+            groupBy: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: ['SERVICE', 'REGION', 'INSTANCE_TYPE', 'LINKED_ACCOUNT'],
+              },
+              description: 'Dimensions to group costs by',
+            },
+            service: {
+              type: 'string',
+              description: 'Filter by specific AWS service',
+            },
+            includeForecast: {
+              type: 'boolean',
+              description: 'Include cost forecast',
+              default: false,
+            },
+          },
+          required: ['startDate', 'endDate'],
+        },
+      },
+      {
+        name: 'anthropic.usage',
+        description: 'Get Anthropic usage information and cost estimation calculator',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            startDate: {
+              type: 'string',
+              description: 'Start date in YYYY-MM-DD format',
+            },
+            endDate: {
+              type: 'string',
+              description: 'End date in YYYY-MM-DD format',
+            },
+            estimatedUsage: {
+              type: 'object',
+              description: 'Estimated token usage for cost calculation',
+              properties: {
+                claude3Opus: { type: 'number' },
+                claude3Sonnet: { type: 'number' },
+                claude3Haiku: { type: 'number' },
+                claude2: { type: 'number' },
+              },
+            },
+          },
+          required: ['startDate', 'endDate'],
+        },
+      },
+      {
+        name: 'provider.compare',
+        description: 'Compare costs across all configured providers',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            startDate: {
+              type: 'string',
+              description: 'Start date in YYYY-MM-DD format',
+            },
+            endDate: {
+              type: 'string',
+              description: 'End date in YYYY-MM-DD format',
+            },
+            includeChart: {
+              type: 'boolean',
+              description: 'Include ASCII chart visualization',
+              default: false,
+            },
+          },
+          required: ['startDate', 'endDate'],
+        },
+      },
     ];
   }
 
   async start(): Promise<void> {
     const config = getConfig();
     initializeCache(config.getCacheConfig());
-    
+
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    
+
     logger.info('Cost Management MCP Server started', {
       providers: Array.from(this.providers.keys()),
     });

@@ -69,11 +69,75 @@ Example usage:
 - Monitor API credit usage
 - Get alerts before credits expire
 
+### 📊 `openai.costs`
+
+**Get detailed OpenAI usage**
+
+- Model-by-model breakdown (GPT-4, GPT-3.5, etc.)
+- Token usage statistics
+- Cost optimization recommendations
+
+Example usage:
+
+- "Show my OpenAI costs grouped by model"
+- "How many tokens did I use with GPT-4 this week?"
+
+### ☁️ `aws.costs`
+
+**AWS cost analysis with insights**
+
+- Service-level breakdown (EC2, S3, RDS, etc.)
+- Filter by specific AWS service
+- Automatic cost optimization tips
+- High spend warnings
+
+Example usage:
+
+- "What are my EC2 costs this month?"
+- "Show AWS costs grouped by service"
+- "Give me AWS cost optimization tips"
+
+### 🤖 `anthropic.usage`
+
+**Anthropic usage estimation**
+
+- Cost calculator for Claude models
+- Token-based pricing estimates
+- Console usage link
+- Model pricing reference
+
+Example usage:
+
+- "Estimate costs for 1M Claude 3 Opus tokens"
+- "Show Anthropic pricing for all models"
+
+### 📈 `provider.compare`
+
+**Compare costs across providers**
+
+- Side-by-side cost comparison
+- ASCII chart visualization
+- Vendor lock-in warnings
+- Cost distribution insights
+
+Example usage:
+
+- "Compare my costs across all cloud providers"
+- "Show me a chart of provider costs"
+- "Which provider is most expensive?"
+
 ## Table of Contents
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Available Tools](#available-tools)
+  - [cost.get](#-costget)
+  - [provider.list](#-providerlist)
+  - [provider.balance](#-providerbalance)
+  - [openai.costs](#-openaicosts)
+  - [aws.costs](#️-awscosts)
+  - [anthropic.usage](#-anthropicusage)
+  - [provider.compare](#-providercompare)
 - [Provider Setup](#provider-setup)
 - [Configuration](#configuration)
 - [Development](#development)
