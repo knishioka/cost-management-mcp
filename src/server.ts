@@ -1,11 +1,7 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import type {
-  Tool} from '@modelcontextprotocol/sdk/types.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema
-} from '@modelcontextprotocol/sdk/types.js';
+import type { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { getConfig } from './common/config';
 import { initializeCache } from './common/cache';
 import { logger } from './common/utils';
@@ -18,6 +14,9 @@ import { getOpenAICostsTool } from './tools/getOpenAICosts';
 import { getAWSCostsTool } from './tools/getAWSCosts';
 import { getAnthropicUsageTool } from './tools/getAnthropicUsage';
 import { compareProvidersTool } from './tools/compareProviders';
+import { getCostTrendsTool } from './tools/getCostTrends';
+import { getCostBreakdownTool } from './tools/getCostBreakdown';
+import { getCostPeriodsTool } from './tools/getCostPeriods';
 import { AWSCostClient } from './providers/aws';
 import { GCPCostClient } from './providers/gcp';
 import { OpenAICostClient } from './providers/openai';
@@ -71,16 +70,16 @@ export class CostManagementMCPServer {
 
     switch (providerName) {
       case 'aws':
-        return new AWSCostClient(providerConfig.credentials);
+        return new AWSCostClient(providerConfig.credentials as any);
 
       case 'gcp':
-        return new GCPCostClient(providerConfig.credentials);
+        return new GCPCostClient(providerConfig.credentials as any);
 
       case 'openai':
-        return new OpenAICostClient(providerConfig.credentials);
+        return new OpenAICostClient(providerConfig.credentials as any);
 
       case 'anthropic':
-        return new AnthropicCostClient(providerConfig.credentials);
+        return new AnthropicCostClient(providerConfig.credentials as any);
 
       default:
         logger.warn(`Provider ${providerName} not implemented yet`);
@@ -118,6 +117,15 @@ export class CostManagementMCPServer {
 
           case 'provider.compare':
             return await compareProvidersTool(args, this.providers);
+
+          case 'cost.trends':
+            return await getCostTrendsTool(args, this.providers);
+
+          case 'cost.breakdown':
+            return await getCostBreakdownTool(args, this.providers);
+
+          case 'cost.periods':
+            return await getCostPeriodsTool(args, this.providers);
 
           default:
             throw new Error(`Unknown tool: ${name}`);
@@ -326,6 +334,114 @@ export class CostManagementMCPServer {
             },
           },
           required: ['startDate', 'endDate'],
+        },
+      },
+      {
+        name: 'cost.trends',
+        description: 'Analyze cost trends over time with insights',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            provider: {
+              type: 'string',
+              enum: ['aws', 'gcp', 'openai', 'anthropic'],
+              description: 'Specific provider to analyze (optional)',
+            },
+            period: {
+              type: 'string',
+              enum: ['30d', '60d', '90d', '6m', '1y'],
+              description: 'Time period to analyze',
+              default: '30d',
+            },
+            granularity: {
+              type: 'string',
+              enum: ['daily', 'weekly', 'monthly'],
+              description: 'Data granularity',
+              default: 'daily',
+            },
+          },
+        },
+      },
+      {
+        name: 'cost.breakdown',
+        description: 'Get detailed cost breakdown by multiple dimensions',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            provider: {
+              type: 'string',
+              enum: ['aws', 'gcp', 'openai', 'anthropic'],
+              description: 'Specific provider to analyze (optional)',
+            },
+            startDate: {
+              type: 'string',
+              description: 'Start date in YYYY-MM-DD format',
+            },
+            endDate: {
+              type: 'string',
+              description: 'End date in YYYY-MM-DD format',
+            },
+            dimensions: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: ['service', 'region', 'date', 'tag'],
+              },
+              description: 'Dimensions to break down costs by',
+              default: ['service'],
+            },
+            topN: {
+              type: 'number',
+              description: 'Number of top items to show',
+              default: 10,
+            },
+            threshold: {
+              type: 'number',
+              description: 'Minimum percentage threshold to include',
+            },
+          },
+          required: ['startDate', 'endDate'],
+        },
+      },
+      {
+        name: 'cost.periods',
+        description: 'Compare costs between two time periods',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            provider: {
+              type: 'string',
+              enum: ['aws', 'gcp', 'openai', 'anthropic'],
+              description: 'Specific provider to analyze (optional)',
+            },
+            period1: {
+              type: 'object',
+              properties: {
+                startDate: { type: 'string' },
+                endDate: { type: 'string' },
+              },
+              required: ['startDate', 'endDate'],
+            },
+            period2: {
+              type: 'object',
+              properties: {
+                startDate: { type: 'string' },
+                endDate: { type: 'string' },
+              },
+              required: ['startDate', 'endDate'],
+            },
+            comparisonType: {
+              type: 'string',
+              enum: ['absolute', 'percentage', 'both'],
+              default: 'both',
+            },
+            breakdown: {
+              type: 'boolean',
+              description: 'Include service-level breakdown',
+              default: true,
+            },
+          },
+          required: ['period1', 'period2'],
         },
       },
     ];

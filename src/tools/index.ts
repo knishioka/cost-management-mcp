@@ -5,3 +5,6 @@ export { getOpenAICostsTool } from './getOpenAICosts';
 export { getAWSCostsTool } from './getAWSCosts';
 export { getAnthropicUsageTool } from './getAnthropicUsage';
 export { compareProvidersTool } from './compareProviders';
+export { getCostTrendsTool } from './getCostTrends';
+export { getCostBreakdownTool } from './getCostBreakdown';
+export { getCostPeriodsTool } from './getCostPeriods';

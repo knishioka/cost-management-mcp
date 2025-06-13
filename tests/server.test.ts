@@ -91,7 +91,7 @@ describe('CostManagementMCPServer', () => {
       server = new CostManagementMCPServer();
       const tools = (server as any).getTools();
 
-      expect(tools).toHaveLength(7);
+      expect(tools).toHaveLength(10);
       expect(tools.map((t: any) => t.name)).toEqual([
         'cost.get',
         'provider.list',
@@ -100,6 +100,9 @@ describe('CostManagementMCPServer', () => {
         'aws.costs',
         'anthropic.usage',
         'provider.compare',
+        'cost.trends',
+        'cost.breakdown',
+        'cost.periods',
       ]);
 
       const costGetTool = tools.find((t: any) => t.name === 'cost.get');

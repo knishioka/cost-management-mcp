@@ -126,6 +126,54 @@ Example usage:
 - "Show me a chart of provider costs"
 - "Which provider is most expensive?"
 
+### 📊 `cost.trends`
+
+**Analyze cost trends over time**
+
+- Historical cost analysis (30d, 60d, 90d, 6m, 1y)
+- Trend detection (increasing/decreasing/stable)
+- Volatility analysis
+- Spike detection
+- Daily/weekly/monthly granularity
+
+Example usage:
+
+- "Show me cost trends for the last 30 days"
+- "Are my AWS costs increasing?"
+- "Detect any cost spikes in the past month"
+
+### 🔍 `cost.breakdown`
+
+**Detailed cost breakdown analysis**
+
+- Multi-dimensional breakdown (service, region, date, tag)
+- Top N cost drivers
+- Percentage-based filtering
+- Hierarchical drill-down
+- Cost concentration analysis
+
+Example usage:
+
+- "Break down my costs by service"
+- "Show top 5 cost drivers"
+- "What services make up 80% of my costs?"
+
+### 📅 `cost.periods`
+
+**Compare costs between time periods**
+
+- Period-over-period comparison
+- Absolute and percentage changes
+- Service-level change tracking
+- Daily average comparison
+- New/discontinued service detection
+
+Example usage:
+
+- "Compare this month vs last month"
+- "How much did costs increase since Q1?"
+- "Which services grew the most?"
+
 ## Table of Contents
 
 - [Installation](#installation)
@@ -158,7 +206,7 @@ Example usage:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/cost-management-mcp.git
+git clone https://github.com/knishioka/cost-management-mcp.git
 cd cost-management-mcp
 ```
 
@@ -759,7 +807,7 @@ Claudeでの使用例：
 
 ```bash
 # リポジトリのクローン
-git clone https://github.com/yourusername/cost-management-mcp.git
+git clone https://github.com/knishioka/cost-management-mcp.git
 cd cost-management-mcp
 
 # 依存関係のインストール
