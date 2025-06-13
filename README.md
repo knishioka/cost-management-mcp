@@ -1,0 +1,640 @@
+# Cost Management MCP
+
+A Model Context Protocol (MCP) server for unified cost management across cloud providers and API services.
+
+[English](#english) | [日本語](#japanese)
+
+<a name="english"></a>
+## Features
+
+- 🔍 Unified cost tracking across AWS, GCP, OpenAI, and Anthropic
+- 💾 Intelligent caching to minimize API costs
+- 📊 Flexible date ranges and granularity options
+- 🔐 Secure credential management via environment variables
+- 🚀 Easy integration with Claude Desktop and other MCP clients
+- ⚡ Written in TypeScript with full type safety
+- 🧪 Comprehensive test coverage
+- 🔄 Automatic retry logic with exponential backoff
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Available Tools](#available-tools)
+- [Provider Setup](#provider-setup)
+- [Configuration](#configuration)
+- [Development](#development)
+- [Architecture](#architecture)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+
+## Installation
+
+### Prerequisites
+
+- Node.js 18 or higher
+- npm or yarn
+- Active accounts with the cloud providers you want to monitor
+
+### Steps
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/cost-management-mcp.git
+cd cost-management-mcp
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Copy the environment template:
+```bash
+cp .env.example .env
+```
+
+4. Edit `.env` and add your credentials (see [Provider Setup](#provider-setup))
+
+5. Build the project:
+```bash
+npm run build
+```
+
+## Quick Start
+
+### Running Standalone
+
+```bash
+# Development mode (with hot reload)
+npm run dev
+
+# Production mode
+npm start
+```
+
+### Integration with Claude Desktop
+
+1. Build the project first:
+```bash
+npm run build
+```
+
+2. Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+
+```json
+{
+  "mcpServers": {
+    "cost-management": {
+      "command": "node",
+      "args": ["/absolute/path/to/cost-management-mcp/dist/index.js"],
+      "env": {
+        "AWS_ACCESS_KEY_ID": "your-key",
+        "AWS_SECRET_ACCESS_KEY": "your-secret",
+        "AWS_REGION": "us-east-1",
+        "OPENAI_API_KEY": "your-key",
+        "CACHE_TTL": "3600",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}
+```
+
+3. Restart Claude Desktop
+
+4. Use the tools in your conversation:
+```
+Can you check my AWS costs for this month?
+What are my OpenAI API costs for the last 7 days?
+List all my configured cloud providers.
+```
+
+## Available Tools
+
+### cost.get
+Retrieve cost data for specified providers and time periods.
+
+**Parameters:**
+- `provider` (optional): Specific provider to query ('aws', 'gcp', 'openai', 'anthropic')
+- `startDate` (required): Start date in YYYY-MM-DD format
+- `endDate` (required): End date in YYYY-MM-DD format
+- `granularity` (optional): 'daily', 'monthly', or 'total' (default: 'total')
+- `groupBy` (optional): Array of dimensions to group by (e.g., ['SERVICE', 'REGION'])
+
+**Example Request:**
+```json
+{
+  "provider": "aws",
+  "startDate": "2024-01-01",
+  "endDate": "2024-01-31",
+  "granularity": "daily",
+  "groupBy": ["SERVICE"]
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "provider": "aws",
+    "period": {
+      "start": "2024-01-01T00:00:00.000Z",
+      "end": "2024-01-31T23:59:59.999Z"
+    },
+    "costs": {
+      "total": 1234.56,
+      "currency": "USD",
+      "breakdown": [
+        {
+          "service": "Amazon EC2",
+          "amount": 800.00,
+          "usage": {
+            "quantity": 720,
+            "unit": "Hours"
+          }
+        },
+        {
+          "service": "Amazon S3",
+          "amount": 434.56
+        }
+      ]
+    },
+    "metadata": {
+      "lastUpdated": "2024-01-31T12:00:00.000Z",
+      "source": "api"
+    }
+  }
+}
+```
+
+### provider.list
+List all configured providers and their connection status.
+
+**Response includes:**
+- Provider name
+- Configuration status
+- Credential validation status
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "providers": [
+      {
+        "name": "aws",
+        "status": "active",
+        "configured": true
+      },
+      {
+        "name": "openai",
+        "status": "active",
+        "configured": true
+      },
+      {
+        "name": "gcp",
+        "status": "not_configured",
+        "configured": false
+      }
+    ],
+    "configured": 2,
+    "total": 4
+  }
+}
+```
+
+### provider.balance
+Check remaining balance or credits (provider-specific).
+*Note: Currently not implemented for most providers*
+
+## Provider Setup
+
+### AWS
+1. **Enable Cost Explorer** in AWS Console 
+   - Navigate to AWS Cost Management → Cost Explorer
+   - Click "Enable Cost Explorer" (⚠️ This action is irreversible)
+   - Wait 24 hours for data to be available
+
+2. **Create IAM User** with minimal permissions:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": [
+           "ce:GetCostAndUsage",
+           "ce:GetCostForecast",
+           "ce:GetDimensionValues"
+         ],
+         "Resource": "*"
+       }
+     ]
+   }
+   ```
+
+3. **Set environment variables:**
+   ```bash
+   AWS_ACCESS_KEY_ID=your-access-key
+   AWS_SECRET_ACCESS_KEY=your-secret-key
+   AWS_REGION=us-east-1  # Cost Explorer only works in us-east-1
+   ```
+
+⚠️ **Important**: AWS charges $0.01 per Cost Explorer API request. Caching is enabled by default (1 hour) to minimize costs.
+
+### Google Cloud Platform
+1. **Enable Cloud Billing API**:
+   ```bash
+   gcloud services enable cloudbilling.googleapis.com
+   ```
+
+2. **Create Service Account**:
+   ```bash
+   gcloud iam service-accounts create cost-management-mcp \
+     --display-name="Cost Management MCP"
+   ```
+
+3. **Grant permissions**:
+   ```bash
+   gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+     --member="serviceAccount:cost-management-mcp@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
+     --role="roles/billing.viewer"
+   ```
+
+4. **Download key and set environment variables**:
+   ```bash
+   gcloud iam service-accounts keys create key.json \
+     --iam-account=cost-management-mcp@YOUR_PROJECT_ID.iam.gserviceaccount.com
+   
+   export GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json
+   export GCP_BILLING_ACCOUNT_ID=your-billing-account-id
+   ```
+
+⚠️ **Note**: Full GCP cost retrieval requires BigQuery export setup. The current implementation provides basic billing account access.
+
+### OpenAI
+1. **Get API Key** from [OpenAI Dashboard](https://platform.openai.com/api-keys)
+
+2. **Ensure you have**:
+   - A paid account with usage history
+   - API access enabled
+
+3. **Set environment variable**:
+   ```bash
+   OPENAI_API_KEY=sk-...your-api-key
+   ```
+
+⚠️ **Note**: The Usage API is relatively new (December 2024). Ensure your account has access.
+
+### Anthropic
+*Note: Anthropic currently doesn't provide a billing API. The provider returns placeholder data.*
+
+To view Anthropic costs:
+1. Log in to [Anthropic Console](https://console.anthropic.com)
+2. Navigate to Settings → Usage
+
+Set the API key anyway for future compatibility:
+```bash
+ANTHROPIC_API_KEY=your-api-key
+```
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `AWS_ACCESS_KEY_ID` | AWS access key | - | For AWS |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key | - | For AWS |
+| `AWS_REGION` | AWS region | us-east-1 | For AWS |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Path to GCP service account JSON | - | For GCP |
+| `GCP_BILLING_ACCOUNT_ID` | GCP billing account ID | - | For GCP |
+| `OPENAI_API_KEY` | OpenAI API key | - | For OpenAI |
+| `ANTHROPIC_API_KEY` | Anthropic API key | - | For Anthropic |
+| `CACHE_TTL` | Cache time-to-live in seconds | 3600 | No |
+| `CACHE_TYPE` | Cache backend (memory/redis) | memory | No |
+| `REDIS_URL` | Redis connection URL | - | If using Redis |
+| `LOG_LEVEL` | Log verbosity (debug/info/warn/error) | info | No |
+| `MCP_SERVER_PORT` | Server port | 3000 | No |
+
+### Cache Configuration
+
+The cache helps reduce API costs and improve performance:
+
+- **Memory Cache** (default): Fast, no setup required, data lost on restart
+- **Redis Cache**: Persistent, shared across instances, requires Redis server
+
+To use Redis:
+```bash
+CACHE_TYPE=redis
+REDIS_URL=redis://localhost:6379
+```
+
+### Logging
+
+Structured JSON logging is used for easy parsing:
+
+```bash
+# View logs in development
+npm run dev
+
+# View logs in production with jq
+npm start 2>&1 | jq '.'
+
+# Filter errors only
+npm start 2>&1 | jq 'select(.level == "error")'
+```
+
+## Development
+
+### Project Structure
+
+```
+cost-management-mcp/
+├── src/
+│   ├── common/          # Shared utilities and types
+│   │   ├── cache.ts     # Caching implementation
+│   │   ├── config.ts    # Configuration management
+│   │   ├── errors.ts    # Custom error classes
+│   │   ├── types.ts     # TypeScript interfaces
+│   │   └── utils.ts     # Helper functions
+│   ├── providers/       # Provider implementations
+│   │   ├── aws/         # AWS Cost Explorer
+│   │   ├── gcp/         # Google Cloud Billing
+│   │   ├── openai/      # OpenAI Usage API
+│   │   └── anthropic/   # Anthropic (placeholder)
+│   ├── tools/           # MCP tool implementations
+│   │   ├── getCosts.ts
+│   │   ├── listProviders.ts
+│   │   └── checkBalance.ts
+│   ├── server.ts        # MCP server setup
+│   └── index.ts         # Entry point
+├── tests/               # Test files
+├── docs/                # Additional documentation
+└── scripts/             # Utility scripts
+```
+
+### Commands
+
+```bash
+# Development with hot reload
+npm run dev
+
+# Build TypeScript to JavaScript
+npm run build
+
+# Run production server
+npm start
+
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+
+# Lint code
+npm run lint
+
+# Fix linting issues
+npm run lint:fix
+
+# Type check without building
+npm run typecheck
+
+# Clean build artifacts
+npm run clean
+```
+
+### Adding a New Provider
+
+1. Create provider directory:
+```bash
+mkdir -p src/providers/newprovider
+```
+
+2. Implement required files:
+- `types.ts` - TypeScript interfaces
+- `transformer.ts` - Convert API response to unified format
+- `client.ts` - API client implementing `ProviderClient`
+- `index.ts` - Public exports
+
+3. Update server.ts to include the new provider
+
+4. Add tests in `tests/providers/newprovider/`
+
+### Testing
+
+Tests use Jest with TypeScript support:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests for specific provider
+npm test -- aws
+
+# Run with coverage
+npm run test:coverage
+
+# Debug tests
+node --inspect-brk node_modules/.bin/jest --runInBand
+```
+
+## Architecture
+
+### Design Principles
+
+1. **Unified Interface**: All providers implement the same `ProviderClient` interface
+2. **Error Resilience**: Automatic retry with exponential backoff
+3. **Cost Optimization**: Aggressive caching to minimize API calls
+4. **Type Safety**: Full TypeScript coverage with strict mode
+5. **Extensibility**: Easy to add new providers or tools
+
+### Data Flow
+
+```
+User Request → MCP Tool → Provider Client → Cache Check
+                                              ↓ (miss)
+                                          External API
+                                              ↓
+                                          Transformer
+                                              ↓
+                                          Cache Store
+                                              ↓
+                                          Response
+```
+
+### Error Handling
+
+The system implements a hierarchical error handling strategy:
+
+1. **Provider Errors**: Specific to each cloud provider
+2. **Authentication Errors**: Invalid or expired credentials
+3. **Rate Limit Errors**: Automatic retry with backoff
+4. **Validation Errors**: Invalid input parameters
+5. **Network Errors**: Retryable connection issues
+
+## Troubleshooting
+
+### Common Issues
+
+#### "Authentication failed" error
+- Verify your API keys/credentials are correct
+- Check if the credentials have the required permissions
+- For AWS, ensure you're using us-east-1 region for Cost Explorer
+
+#### No cost data returned
+- AWS: Wait 24 hours after enabling Cost Explorer
+- GCP: Ensure billing export is configured
+- OpenAI: Verify you have a paid account with usage
+
+#### High AWS costs
+- Cost Explorer API charges $0.01 per request
+- Increase `CACHE_TTL` to reduce API calls
+- Use Redis cache for persistence across restarts
+
+#### "Rate limit exceeded" error
+- The system automatically retries with exponential backoff
+- If persistent, check your API quotas
+- Consider increasing cache TTL
+
+### Debug Mode
+
+Enable debug logging for more information:
+```bash
+LOG_LEVEL=debug npm run dev
+```
+
+### Health Check
+
+Test individual providers:
+```bash
+# In your MCP client
+Use the provider.list tool to check all providers
+```
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass: `npm test`
+6. Lint your code: `npm run lint`
+7. Commit with descriptive message
+8. Push to your fork and submit a PR
+
+### Code Style
+
+- Follow TypeScript best practices
+- Use meaningful variable names
+- Add JSDoc comments for public APIs
+- Keep functions small and focused
+- Write tests for new features
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details
+
+---
+
+<a name="japanese"></a>
+## 日本語ドキュメント
+
+### 概要
+
+Cost Management MCPは、複数のクラウドプロバイダーとAPIサービスのコストを統一的に管理するためのModel Context Protocol (MCP)サーバーです。
+
+### 主な機能
+
+- 🔍 AWS、GCP、OpenAI、Anthropicのコストを一元管理
+- 💾 APIコストを最小限に抑えるインテリジェントキャッシング
+- 📊 柔軟な日付範囲と集計オプション
+- 🔐 環境変数による安全な認証情報管理
+- 🚀 Claude Desktopとの簡単な統合
+- ⚡ TypeScriptによる型安全性
+- 🧪 包括的なテストカバレッジ
+- 🔄 指数バックオフによる自動リトライ
+
+### インストール
+
+```bash
+# リポジトリのクローン
+git clone https://github.com/yourusername/cost-management-mcp.git
+cd cost-management-mcp
+
+# 依存関係のインストール
+npm install
+
+# 環境変数の設定
+cp .env.example .env
+# .envファイルを編集して認証情報を追加
+
+# ビルド
+npm run build
+```
+
+### Claude Desktopとの統合
+
+Claude Desktopの設定ファイルに以下を追加：
+
+```json
+{
+  "mcpServers": {
+    "cost-management": {
+      "command": "node",
+      "args": ["/path/to/cost-management-mcp/dist/index.js"],
+      "env": {
+        "AWS_ACCESS_KEY_ID": "your-key",
+        "AWS_SECRET_ACCESS_KEY": "your-secret",
+        "OPENAI_API_KEY": "your-key"
+      }
+    }
+  }
+}
+```
+
+### 使用例
+
+```
+今月のAWSのコストを教えて
+過去7日間のOpenAI APIの使用料金は？
+設定されているクラウドプロバイダーを一覧表示して
+```
+
+### プロバイダーの設定
+
+各プロバイダーの詳細な設定方法は[英語版ドキュメント](#provider-setup)を参照してください。
+
+### 開発
+
+```bash
+# 開発モード（ホットリロード付き）
+npm run dev
+
+# テストの実行
+npm test
+
+# リントチェック
+npm run lint
+
+# 型チェック
+npm run typecheck
+```
+
+### ライセンス
+
+MIT License
+
+---
+
+Built with ❤️ using TypeScript and MCP

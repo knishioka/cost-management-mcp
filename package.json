@@ -1,0 +1,42 @@
+{
+  "name": "cost-management-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for unified cost management across cloud providers",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^24.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/parser": "^8.34.0",
+    "eslint": "^9.28.0",
+    "jest": "^30.0.0",
+    "ts-jest": "^29.4.0",
+    "tsx": "^4.20.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cost-explorer": "^3.828.0",
+    "@google-cloud/billing": "^5.0.1",
+    "dotenv": "^16.5.0",
+    "node-cache": "^5.1.2",
+    "openai": "^5.3.0",
+    "zod": "^3.25.63"
+  }
+}
