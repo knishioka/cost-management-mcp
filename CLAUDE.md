@@ -1,11 +1,13 @@
 # Claude Development Guidelines for Cost Management MCP
 
 ## Project Overview
+
 This is a Model Context Protocol (MCP) server that provides unified cost monitoring across multiple cloud and API providers (AWS, GCP, OpenAI, Anthropic). The server allows users to retrieve cost data, monitor usage, and track expenses across different services through a consistent interface.
 
 ## Key Commands
 
 ### Development
+
 - `npm run dev` - Start development server with hot reload
 - `npm run build` - Build TypeScript to JavaScript
 - `npm run test` - Run all tests
@@ -13,33 +15,49 @@ This is a Model Context Protocol (MCP) server that provides unified cost monitor
 - `npm run typecheck` - Check TypeScript types
 
 ### Before Committing
-Always run these commands before committing code:
+
+Pre-commit hooks are configured to automatically run checks:
+
+- **ESLint** - Automatically fixes code style issues
+- **Prettier** - Formats code for consistency
+
+The hooks run automatically on `git commit`. To run checks manually:
+
 ```bash
 npm run lint
 npm run typecheck
 npm test
 ```
 
+If you need to bypass hooks temporarily (not recommended):
+
+```bash
+git commit --no-verify -m "your message"
+```
+
 ## Architecture Overview
 
 ### Provider Structure
+
 Each provider (AWS, GCP, OpenAI, Anthropic) has:
+
 - `client.ts` - API client implementation
 - `types.ts` - TypeScript type definitions
 - `transformer.ts` - Transforms provider data to unified format
 
 ### Unified Data Model
+
 ```typescript
 interface UnifiedCostData {
   provider: 'aws' | 'gcp' | 'openai' | 'anthropic';
-  period: { start: Date; end: Date; };
+  period: { start: Date; end: Date };
   costs: {
     total: number;
     currency: string;
     breakdown: Array<{
       service: string;
       amount: number;
-      usage?: { quantity: number; unit: string; };
+      usage?: { quantity: number; unit: string };
     }>;
   };
   metadata: {
@@ -52,18 +70,21 @@ interface UnifiedCostData {
 ## Implementation Guidelines
 
 ### Error Handling
+
 - Always use custom error classes from `src/common/errors.ts`
 - Implement retry logic with exponential backoff for API calls
 - Log errors appropriately without exposing sensitive data
 - Provide meaningful error messages to users
 
 ### Caching Strategy
+
 - Cache all API responses to minimize costs (especially AWS at $0.01/request)
 - Default TTL: 1 hour (configurable via CACHE_TTL env var)
 - Implement cache invalidation on demand
 - Use separate cache keys for each provider/query combination
 
 ### Security Best Practices
+
 - **NEVER** log API keys or sensitive credentials
 - All credentials must come from environment variables
 - Validate all user inputs using Zod schemas
@@ -71,6 +92,7 @@ interface UnifiedCostData {
 - No hardcoded URLs or credentials in code
 
 ### Testing Requirements
+
 - Write unit tests for all business logic
 - Mock external API calls in tests
 - Aim for minimum 80% code coverage
@@ -78,6 +100,7 @@ interface UnifiedCostData {
 - Use descriptive test names
 
 ### Code Style
+
 - Use TypeScript strict mode
 - No `any` types allowed
 - Use explicit return types for functions
@@ -88,13 +111,15 @@ interface UnifiedCostData {
 ## MCP Tool Implementation
 
 ### Available Tools
+
 1. `cost.get` - Retrieve costs for a specific period
-2. `cost.summary` - Get summary across all providers  
+2. `cost.summary` - Get summary across all providers
 3. `cost.forecast` - Predict future costs (AWS/GCP only)
 4. `provider.list` - List configured providers
 5. `provider.status` - Check provider connection status
 
 ### Tool Response Format
+
 ```typescript
 {
   success: boolean;
@@ -110,24 +135,28 @@ interface UnifiedCostData {
 ## Provider-Specific Notes
 
 ### AWS
+
 - Uses AWS SDK v3
 - Requires Cost Explorer to be enabled (irreversible)
 - API calls cost $0.01 each - implement aggressive caching
 - Authentication via IAM credentials
 
 ### Google Cloud
+
 - Uses official @google-cloud/billing library
 - Supports Application Default Credentials (ADC)
 - Free API calls but has rate limits
 - Requires billing.accounts.get permission
 
 ### OpenAI
+
 - New Usage API (December 2024)
 - REST API with Bearer token auth
 - Provides granular usage data
 - Can filter by API key, project, model
 
 ### Anthropic
+
 - Currently no programmatic API
 - Implement placeholder for manual entry
 - Prepare structure for future API support
@@ -136,13 +165,14 @@ interface UnifiedCostData {
 ## Environment Setup
 
 ### Required Environment Variables
+
 ```bash
 # AWS
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 AWS_REGION=us-east-1
 
-# GCP  
+# GCP
 GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json
 GCP_BILLING_ACCOUNT_ID=
 
@@ -155,6 +185,7 @@ CACHE_TYPE=memory
 ```
 
 ### Local Development
+
 1. Copy `.env.example` to `.env`
 2. Fill in your API credentials
 3. Run `npm install`
@@ -163,10 +194,11 @@ CACHE_TYPE=memory
 ## Common Patterns
 
 ### API Client Pattern
+
 ```typescript
 class ProviderClient {
   constructor(private config: ProviderConfig) {}
-  
+
   async getCosts(params: CostParams): Promise<ProviderCostData> {
     // 1. Check cache
     // 2. Make API call with retry logic
@@ -178,6 +210,7 @@ class ProviderClient {
 ```
 
 ### Error Handling Pattern
+
 ```typescript
 try {
   const result = await apiCall();
@@ -193,12 +226,14 @@ try {
 ## Debugging Tips
 
 ### Logging
+
 - Use structured logging with correlation IDs
 - Log at appropriate levels (debug, info, warn, error)
 - Include context but never sensitive data
 - Use `LOG_LEVEL` env var to control verbosity
 
 ### Common Issues
+
 1. **Authentication failures** - Check env vars and permissions
 2. **Rate limits** - Implement exponential backoff
 3. **Cache misses** - Verify cache configuration
@@ -207,32 +242,62 @@ try {
 ## Performance Considerations
 
 ### API Optimization
+
 - Batch requests where possible
-- Use pagination efficiently  
+- Use pagination efficiently
 - Implement request queuing
 - Monitor rate limit headers
 
 ### Memory Management
+
 - Stream large responses
 - Implement data pagination
 - Clear cache of old entries
 - Monitor memory usage
 
+## Development Workflow
+
+### Git Commit Process
+
+1. Stage your changes: `git add .`
+2. Commit your changes: `git commit -m "your message"`
+3. Pre-commit hooks will automatically:
+   - Run ESLint and fix issues
+   - Format code with Prettier
+   - Block commit if there are unfixable errors
+4. Fix any errors and retry if needed
+
+### Commit Message Format
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+- `feat:` New features
+- `fix:` Bug fixes
+- `docs:` Documentation changes
+- `chore:` Maintenance tasks
+- `test:` Test additions/changes
+- `refactor:` Code refactoring
+
+Example: `feat: add cost forecasting for AWS provider`
+
 ## Release Checklist
 
 Before releasing:
-1. [ ] All tests passing
-2. [ ] No linting errors
-3. [ ] TypeScript compilation successful
+
+1. [ ] All tests passing (`npm test`)
+2. [ ] No linting errors (`npm run lint`)
+3. [ ] TypeScript compilation successful (`npm run build`)
 4. [ ] Documentation updated
 5. [ ] Environment variables documented
 6. [ ] Error messages are user-friendly
 7. [ ] Sensitive data not logged
 8. [ ] Performance tested with real data
+9. [ ] Pre-commit hooks passing
 
 ## Future Enhancements
 
 Planned improvements:
+
 - Web dashboard for visualization
 - Cost alerts and notifications
 - Budget tracking features
