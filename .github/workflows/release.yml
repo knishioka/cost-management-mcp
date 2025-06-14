@@ -41,7 +41,7 @@ jobs:
           .env.example
     
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: cost-management-mcp-${{ github.ref_name }}.tar.gz
         body: |
