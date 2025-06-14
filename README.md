@@ -3,9 +3,8 @@
 [![CI](https://github.com/knishioka/cost-management-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/knishioka/cost-management-mcp/actions/workflows/ci.yml)
 [![Security Scan](https://github.com/knishioka/cost-management-mcp/actions/workflows/security.yml/badge.svg)](https://github.com/knishioka/cost-management-mcp/actions/workflows/security.yml)
 [![Release](https://github.com/knishioka/cost-management-mcp/actions/workflows/release.yml/badge.svg)](https://github.com/knishioka/cost-management-mcp/actions/workflows/release.yml)
-[![npm version](https://img.shields.io/npm/v/cost-management-mcp.svg)](https://www.npmjs.com/package/cost-management-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/node/v/cost-management-mcp.svg)](https://nodejs.org)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue.svg)](https://www.typescriptlang.org/)
 [![codecov](https://codecov.io/gh/knishioka/cost-management-mcp/branch/main/graph/badge.svg)](https://codecov.io/gh/knishioka/cost-management-mcp)
 
