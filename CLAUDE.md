@@ -112,11 +112,35 @@ interface UnifiedCostData {
 
 ### Available Tools
 
-1. `cost.get` - Retrieve costs for a specific period
-2. `cost.summary` - Get summary across all providers
-3. `cost.forecast` - Predict future costs (AWS/GCP only)
-4. `provider.list` - List configured providers
-5. `provider.status` - Check provider connection status
+1. `cost_get` - Retrieve costs for a specific period
+2. `provider_list` - List configured providers
+3. `provider_balance` - Check provider balance/credits
+4. `openai_costs` - Get detailed OpenAI usage data
+5. `aws_costs` - Get detailed AWS cost analysis
+6. `provider_compare` - Compare costs across providers
+7. `cost_trends` - Analyze cost trends over time
+8. `cost_breakdown` - Get detailed cost breakdown
+9. `cost_periods` - Compare costs between time periods
+
+### MCP Tool Naming Convention
+
+**IMPORTANT**: All MCP tool names must follow the pattern `^[a-zA-Z0-9_-]{1,64}$`
+
+- ✅ Valid: `cost_get`, `provider_list`, `aws_costs`
+- ❌ Invalid: `cost.get`, `provider.list`, `aws.costs` (dots not allowed)
+
+This is a strict MCP requirement. Tool names containing dots (.) will cause API errors:
+
+```
+"tools.16.custom.name: String should match pattern '^[a-zA-Z0-9_-]{1,64}$'"
+```
+
+When adding new tools:
+
+- Use underscores (\_) instead of dots (.)
+- Use hyphens (-) for word separation if needed
+- Keep names under 64 characters
+- Use only alphanumeric characters, underscores, and hyphens
 
 ### Tool Response Format
 

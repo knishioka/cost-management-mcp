@@ -33,7 +33,7 @@ Once integrated with Claude Desktop, you can ask:
 
 This server provides three powerful tools for cost management:
 
-### 📊 `cost.get`
+### 📊 `cost_get`
 
 **Get detailed cost breakdowns**
 
@@ -48,7 +48,7 @@ Example questions in Claude:
 - "Show me daily OpenAI usage for the last week"
 - "Break down my cloud costs by service"
 
-### 📋 `provider.list`
+### 📋 `provider_list`
 
 **Check provider status**
 
@@ -61,7 +61,7 @@ Example usage:
 - "List all my cloud providers"
 - "Which cost tracking services are active?"
 
-### 💰 `provider.balance`
+### 💰 `provider_balance`
 
 **Check remaining credits** _(Coming soon)_
 
@@ -69,7 +69,7 @@ Example usage:
 - Monitor API credit usage
 - Get alerts before credits expire
 
-### 📊 `openai.costs`
+### 📊 `openai_costs`
 
 **Get detailed OpenAI usage**
 
@@ -82,7 +82,7 @@ Example usage:
 - "Show my OpenAI costs grouped by model"
 - "How many tokens did I use with GPT-4 this week?"
 
-### ☁️ `aws.costs`
+### ☁️ `aws_costs`
 
 **AWS cost analysis with insights**
 
@@ -97,7 +97,7 @@ Example usage:
 - "Show AWS costs grouped by service"
 - "Give me AWS cost optimization tips"
 
-### 📈 `provider.compare`
+### 📈 `provider_compare`
 
 **Compare costs across providers**
 
@@ -112,7 +112,7 @@ Example usage:
 - "Show me a chart of provider costs"
 - "Which provider is most expensive?"
 
-### 📊 `cost.trends`
+### 📊 `cost_trends`
 
 **Analyze cost trends over time**
 
@@ -128,7 +128,7 @@ Example usage:
 - "Are my AWS costs increasing?"
 - "Detect any cost spikes in the past month"
 
-### 🔍 `cost.breakdown`
+### 🔍 `cost_breakdown`
 
 **Detailed cost breakdown analysis**
 
@@ -144,7 +144,7 @@ Example usage:
 - "Show top 5 cost drivers"
 - "What services make up 80% of my costs?"
 
-### 📅 `cost.periods`
+### 📅 `cost_periods`
 
 **Compare costs between time periods**
 
@@ -165,12 +165,12 @@ Example usage:
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Available Tools](#available-tools)
-  - [cost.get](#-costget)
-  - [provider.list](#-providerlist)
-  - [provider.balance](#-providerbalance)
-  - [openai.costs](#-openaicosts)
-  - [aws.costs](#️-awscosts)
-  - [provider.compare](#-providercompare)
+  - [cost_get](#-cost_get)
+  - [provider_list](#-provider_list)
+  - [provider_balance](#-provider_balance)
+  - [openai_costs](#-openai_costs)
+  - [aws_costs](#️-aws_costs)
+  - [provider_compare](#-provider_compare)
 - [Provider Setup](#provider-setup)
 - [Configuration](#configuration)
 - [Development](#development)
@@ -346,7 +346,7 @@ Once configured, you can ask Claude Code about your cloud costs:
 
 ## Available Tools
 
-### cost.get
+### cost_get
 
 Retrieve cost data for specified providers and time periods.
 
@@ -407,7 +407,7 @@ Retrieve cost data for specified providers and time periods.
 }
 ```
 
-### provider.list
+### provider_list
 
 List all configured providers and their connection status.
 
@@ -446,7 +446,7 @@ List all configured providers and their connection status.
 }
 ```
 
-### provider.balance
+### provider_balance
 
 Check remaining balance or credits (provider-specific).
 _Note: Currently not implemented for most providers_
@@ -758,7 +758,7 @@ Test individual providers:
 
 ```bash
 # In your MCP client
-Use the provider.list tool to check all providers
+Use the provider_list tool to check all providers
 ```
 
 ## Contributing
@@ -828,7 +828,7 @@ Claudeでの使用例：
 - 「過去1週間のOpenAIの日次使用量を表示して」
 - 「クラウドコストをサービス別に分解して」
 
-### 📋 `provider.list`
+### 📋 `provider_list`
 
 **プロバイダーの状態を確認**
 
@@ -841,7 +841,7 @@ Claudeでの使用例：
 - 「すべてのクラウドプロバイダーを一覧表示」
 - 「どのコスト追跡サービスがアクティブ？」
 
-### 💰 `provider.balance`
+### 💰 `provider_balance`
 
 **残高の確認** _(近日公開)_
 

@@ -11,26 +11,24 @@ export function transformOpenAIUsageResponse(
 
   // Aggregate usage by model
   for (const data of response.data) {
-    for (const usage of data.usage) {
-      const model = usage.model;
-      const inputTokens = usage.n_context_tokens;
-      const outputTokens = usage.n_generated_tokens;
-      
-      // Calculate cost based on model pricing
-      const pricing = OPENAI_MODEL_PRICING[model as keyof typeof OPENAI_MODEL_PRICING];
-      let cost = 0;
-      
-      if (pricing && typeof pricing === 'object' && 'input' in pricing) {
-        // Text models - charge per 1K tokens
-        cost = (inputTokens * pricing.input / 1000) + (outputTokens * pricing.output / 1000);
-      }
-      
-      const existing = modelCosts.get(model) || { cost: 0, tokens: 0 };
-      modelCosts.set(model, {
-        cost: existing.cost + cost,
-        tokens: existing.tokens + inputTokens + outputTokens,
-      });
+    const model = data.snapshot_id; // This is the model name in the actual API
+    const inputTokens = data.n_context_tokens_total;
+    const outputTokens = data.n_generated_tokens_total;
+
+    // Calculate cost based on model pricing
+    const pricing = OPENAI_MODEL_PRICING[model as keyof typeof OPENAI_MODEL_PRICING];
+    let cost = 0;
+
+    if (pricing && typeof pricing === 'object' && 'input' in pricing) {
+      // Text models - charge per 1K tokens
+      cost = (inputTokens * pricing.input) / 1000 + (outputTokens * pricing.output) / 1000;
     }
+
+    const existing = modelCosts.get(model) || { cost: 0, tokens: 0 };
+    modelCosts.set(model, {
+      cost: existing.cost + cost,
+      tokens: existing.tokens + inputTokens + outputTokens,
+    });
   }
 
   // Convert to breakdown format

@@ -91,31 +91,31 @@ export class CostManagementMCPServer {
         const { name, arguments: args } = request.params;
 
         switch (name) {
-          case 'cost.get':
+          case 'cost_get':
             return await getCostTool(args, this.providers);
 
-          case 'provider.list':
+          case 'provider_list':
             return await listProvidersTool(this.providers);
 
-          case 'provider.balance':
+          case 'provider_balance':
             return await checkBalanceTool(args, this.providers);
 
-          case 'openai.costs':
+          case 'openai_costs':
             return await getOpenAICostsTool(args, this.providers);
 
-          case 'aws.costs':
+          case 'aws_costs':
             return await getAWSCostsTool(args, this.providers);
 
-          case 'provider.compare':
+          case 'provider_compare':
             return await compareProvidersTool(args, this.providers);
 
-          case 'cost.trends':
+          case 'cost_trends':
             return await getCostTrendsTool(args, this.providers);
 
-          case 'cost.breakdown':
+          case 'cost_breakdown':
             return await getCostBreakdownTool(args, this.providers);
 
-          case 'cost.periods':
+          case 'cost_periods':
             return await getCostPeriodsTool(args, this.providers);
 
           default:
@@ -151,7 +151,7 @@ export class CostManagementMCPServer {
   private getTools(): Tool[] {
     return [
       {
-        name: 'cost.get',
+        name: 'cost_get',
         description: 'Get cost data for a specific provider and time period',
         inputSchema: {
           type: 'object',
@@ -185,7 +185,7 @@ export class CostManagementMCPServer {
         },
       },
       {
-        name: 'provider.list',
+        name: 'provider_list',
         description: 'List all configured providers and their status',
         inputSchema: {
           type: 'object',
@@ -193,7 +193,7 @@ export class CostManagementMCPServer {
         },
       },
       {
-        name: 'provider.balance',
+        name: 'provider_balance',
         description: 'Check remaining balance or credits for a provider',
         inputSchema: {
           type: 'object',
@@ -208,7 +208,7 @@ export class CostManagementMCPServer {
         },
       },
       {
-        name: 'openai.costs',
+        name: 'openai_costs',
         description: 'Get detailed OpenAI costs with model breakdown and token usage',
         inputSchema: {
           type: 'object',
@@ -236,7 +236,7 @@ export class CostManagementMCPServer {
         },
       },
       {
-        name: 'aws.costs',
+        name: 'aws_costs',
         description: 'Get detailed AWS costs with service breakdown and optimization tips',
         inputSchema: {
           type: 'object',
@@ -277,7 +277,7 @@ export class CostManagementMCPServer {
         },
       },
       {
-        name: 'provider.compare',
+        name: 'provider_compare',
         description: 'Compare costs across all configured providers',
         inputSchema: {
           type: 'object',
@@ -300,7 +300,7 @@ export class CostManagementMCPServer {
         },
       },
       {
-        name: 'cost.trends',
+        name: 'cost_trends',
         description: 'Analyze cost trends over time with insights',
         inputSchema: {
           type: 'object',
@@ -326,7 +326,7 @@ export class CostManagementMCPServer {
         },
       },
       {
-        name: 'cost.breakdown',
+        name: 'cost_breakdown',
         description: 'Get detailed cost breakdown by multiple dimensions',
         inputSchema: {
           type: 'object',
@@ -367,7 +367,7 @@ export class CostManagementMCPServer {
         },
       },
       {
-        name: 'cost.periods',
+        name: 'cost_periods',
         description: 'Compare costs between two time periods',
         inputSchema: {
           type: 'object',

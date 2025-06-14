@@ -92,28 +92,41 @@ export class OpenAICostClient implements ProviderClient {
   }
 
   private async fetchUsageData(params: CostQueryParams): Promise<OpenAIUsageResponse> {
-    // OpenAI's usage API endpoint structure
-    const startDate = formatOpenAIDate(params.startDate);
-    const endDate = formatOpenAIDate(params.endDate);
+    // OpenAI's usage API uses single date parameter, not date ranges
+    // We need to aggregate data across multiple days
+    const startDate = new Date(params.startDate);
+    const endDate = new Date(params.endDate);
+    const allData: any[] = [];
 
-    // Note: The actual endpoint might be different as the API is new
-    // This is based on typical OpenAI API patterns
-    const url = `https://api.openai.com/v1/usage?start_date=${startDate}&end_date=${endDate}`;
+    // Iterate through each day in the range
+    for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+      const dateStr = formatOpenAIDate(date);
+      const url = `https://api.openai.com/v1/usage?date=${dateStr}`;
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${this.client.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-    });
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${this.client.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
+      }
+
+      const dayData = (await response.json()) as any;
+      if (dayData.data && Array.isArray(dayData.data)) {
+        allData.push(...dayData.data);
+      }
     }
 
-    return response.json() as Promise<OpenAIUsageResponse>;
+    return {
+      object: 'list',
+      data: allData,
+      has_more: false,
+    } as OpenAIUsageResponse;
   }
 
   async validateCredentials(): Promise<boolean> {
