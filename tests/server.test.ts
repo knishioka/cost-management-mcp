@@ -98,18 +98,18 @@ describe('CostManagementMCPServer', () => {
 
       expect(tools).toHaveLength(9);
       expect(tools.map((t: any) => t.name)).toEqual([
-        'cost.get',
-        'provider.list',
-        'provider.balance',
-        'openai.costs',
-        'aws.costs',
-        'provider.compare',
-        'cost.trends',
-        'cost.breakdown',
-        'cost.periods',
+        'cost_get',
+        'provider_list',
+        'provider_balance',
+        'openai_costs',
+        'aws_costs',
+        'provider_compare',
+        'cost_trends',
+        'cost_breakdown',
+        'cost_periods',
       ]);
 
-      const costGetTool = tools.find((t: any) => t.name === 'cost.get');
+      const costGetTool = tools.find((t: any) => t.name === 'cost_get');
       expect(costGetTool).toBeDefined();
       expect(costGetTool.description).toContain('Get cost data');
       expect(costGetTool.inputSchema.properties).toHaveProperty('provider');
