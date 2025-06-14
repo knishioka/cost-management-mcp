@@ -16,9 +16,29 @@
     "clean": "rm -rf dist coverage",
     "prepare": "husky"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "cost-management",
+    "aws",
+    "gcp",
+    "openai",
+    "cloud-cost",
+    "finops"
+  ],
+  "author": "knishioka",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/knishioka/cost-management-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/knishioka/cost-management-mcp/issues"
+  },
+  "homepage": "https://github.com/knishioka/cost-management-mcp#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "type": "commonjs",
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",

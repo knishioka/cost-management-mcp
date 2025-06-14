@@ -91,6 +91,58 @@ interface UnifiedCostData {
 - Use least privilege permissions for cloud APIs
 - No hardcoded URLs or credentials in code
 
+### ⚠️ CRITICAL: Preventing Credential Leaks
+
+**Before EVERY commit:**
+
+1. **Review all changed files** for sensitive data:
+
+   - API keys (e.g., `sk-...`, `AKIA...`)
+   - Passwords and secrets
+   - Private keys or certificates
+   - Database connection strings
+   - Personal access tokens
+
+2. **Check configuration files**:
+
+   - `.env` files should NEVER be committed
+   - `.mcp.json` with credentials must be in `.gitignore`
+   - Example/template files should use placeholder values
+
+3. **Use git commands to verify**:
+
+   ```bash
+   # Check what will be committed
+   git diff --staged
+
+   # Search for common credential patterns
+   git diff --staged | grep -E "(api_key|apikey|password|secret|token|credential)"
+   ```
+
+4. **If credentials are accidentally staged**:
+
+   ```bash
+   # Unstage the file
+   git reset HEAD <file>
+
+   # Remove sensitive data and re-stage
+   ```
+
+5. **If credentials are accidentally committed**:
+   - **IMMEDIATELY** revoke and rotate the exposed credentials
+   - Use `git rebase` or `git filter-branch` to remove from history
+   - Force push requires coordination with team
+   - Consider the credentials permanently compromised
+
+### Pre-commit Checklist:
+
+- [ ] No API keys in code
+- [ ] No tokens in configuration files
+- [ ] No passwords in comments
+- [ ] No private keys in repository
+- [ ] All secrets use environment variables
+- [ ] Example files use dummy values only
+
 ### Testing Requirements
 
 - Write unit tests for all business logic

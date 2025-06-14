@@ -49,3 +49,14 @@ temp/
 
 # Claude Code configuration
 .mcp.json
+
+# Security - Never commit credentials
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+.aws/
+credentials.json
+secrets/
+private/

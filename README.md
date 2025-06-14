@@ -1,5 +1,14 @@
 # Cost Management MCP
 
+[![CI](https://github.com/knishioka/cost-management-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/knishioka/cost-management-mcp/actions/workflows/ci.yml)
+[![Security Scan](https://github.com/knishioka/cost-management-mcp/actions/workflows/security.yml/badge.svg)](https://github.com/knishioka/cost-management-mcp/actions/workflows/security.yml)
+[![Release](https://github.com/knishioka/cost-management-mcp/actions/workflows/release.yml/badge.svg)](https://github.com/knishioka/cost-management-mcp/actions/workflows/release.yml)
+[![npm version](https://img.shields.io/npm/v/cost-management-mcp.svg)](https://www.npmjs.com/package/cost-management-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/node/v/cost-management-mcp.svg)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue.svg)](https://www.typescriptlang.org/)
+[![codecov](https://codecov.io/gh/knishioka/cost-management-mcp/branch/main/graph/badge.svg)](https://codecov.io/gh/knishioka/cost-management-mcp)
+
 A Model Context Protocol (MCP) server for unified cost management across cloud providers and API services.
 
 [English](#english) | [日本語](#japanese)
@@ -28,6 +37,8 @@ Once integrated with Claude Desktop, you can ask:
 - ⚡ Written in TypeScript with full type safety
 - 🧪 Comprehensive test coverage
 - 🔄 Automatic retry logic with exponential backoff
+- 🛡️ Security scanning with CodeQL and Trufflehog
+- 📦 Automated dependency updates with Dependabot
 
 ## 🛠️ MCP Tools
 
@@ -784,6 +795,26 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - Keep functions small and focused
 - Write tests for new features
 
+## 📊 Project Status
+
+### Build & Test
+
+- **CI/CD**: Automated testing on push and PR
+- **Node Support**: 18.x and 20.x
+- **Coverage**: Comprehensive test suite with coverage reporting
+
+### Security
+
+- **Dependency Scanning**: Weekly automated updates
+- **Secret Detection**: Continuous monitoring for exposed credentials
+- **Code Analysis**: CodeQL security scanning
+
+### Quality
+
+- **Type Safety**: Strict TypeScript configuration
+- **Linting**: ESLint with auto-fix on commit
+- **Formatting**: Prettier code formatting
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details
@@ -808,6 +839,8 @@ Cost Management MCPは、複数のクラウドプロバイダーとAPIサービ�
 - ⚡ TypeScriptによる型安全性
 - 🧪 包括的なテストカバレッジ
 - 🔄 指数バックオフによる自動リトライ
+- 🛡️ CodeQLとTrufflehogによるセキュリティスキャン
+- 📦 Dependabotによる自動依存関係更新
 
 ### 🛠️ 利用可能なMCPツール
 
@@ -990,6 +1023,26 @@ npm run lint
 # 型チェック
 npm run typecheck
 ```
+
+### 📊 プロジェクトステータス
+
+### ビルド＆テスト
+
+- **CI/CD**: プッシュとPR時の自動テスト
+- **Nodeサポート**: 18.xと20.x
+- **カバレッジ**: カバレッジレポート付きの包括的なテストスイート
+
+### セキュリティ
+
+- **依存関係スキャン**: 週次自動更新
+- **シークレット検出**: 公開された認証情報の継続的監視
+- **コード分析**: CodeQLセキュリティスキャン
+
+### 品質
+
+- **型安全性**: 厳格なTypeScript設定
+- **リンティング**: コミット時のESLint自動修正
+- **フォーマット**: Prettierコードフォーマット
 
 ### ライセンス
 
