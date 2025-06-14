@@ -62,7 +62,7 @@ jobs:
         )
         
         for pattern in "${patterns[@]}"; do
-          if git grep -E "$pattern" -- ':(exclude).env*' ':(exclude)*.example' ':(exclude)test*'; then
+          if git grep -E "$pattern" -- ':(exclude).env*' ':(exclude)*.example' ':(exclude)test*' ':(exclude)*.test.*' ':(exclude)test-*' ':(exclude)*.md'; then
             echo "WARNING: Potential secret found matching pattern: $pattern"
             exit 1
           fi

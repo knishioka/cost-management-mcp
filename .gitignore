@@ -60,3 +60,8 @@ temp/
 credentials.json
 secrets/
 private/
+
+# Test files that might contain example credentials
+test-*.js
+interactive-*.js
+analyze-*.js
