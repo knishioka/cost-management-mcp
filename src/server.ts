@@ -37,7 +37,6 @@ export class CostManagementMCPServer {
       },
     );
 
-    this.initializeProviders();
     this.setupHandlers();
   }
 
@@ -414,6 +413,9 @@ export class CostManagementMCPServer {
   async start(): Promise<void> {
     const config = getConfig();
     initializeCache(config.getCacheConfig());
+
+    // Initialize providers after cache is ready
+    this.initializeProviders();
 
     const transport = new StdioServerTransport();
     await this.server.connect(transport);

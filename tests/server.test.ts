@@ -5,6 +5,9 @@ import { initializeCache } from '../src/common/cache';
 
 // Mock dependencies
 jest.mock('@modelcontextprotocol/sdk/server/index.js');
+jest.mock('@modelcontextprotocol/sdk/server/stdio.js', () => ({
+  StdioServerTransport: jest.fn().mockImplementation(() => ({})),
+}));
 jest.mock('../src/common/config');
 jest.mock('../src/common/cache');
 jest.mock('../src/providers/aws', () => ({
@@ -57,25 +60,27 @@ describe('CostManagementMCPServer', () => {
       );
     });
 
-    it('should initialize enabled providers', () => {
+    it('should initialize enabled providers', async () => {
       mockConfig.getProviderConfig.mockReturnValue({
         enabled: true,
         credentials: { accessKeyId: 'test', secretAccessKey: 'test', region: 'us-east-1' },
       });
 
       server = new CostManagementMCPServer();
+      await server.start();
 
       expect(mockConfig.getEnabledProviders).toHaveBeenCalled();
       expect(mockConfig.getProviderConfig).toHaveBeenCalledWith('aws');
     });
 
-    it('should skip disabled providers', () => {
+    it('should skip disabled providers', async () => {
       mockConfig.getEnabledProviders.mockReturnValue(['aws', 'openai']);
       mockConfig.getProviderConfig
         .mockReturnValueOnce({ enabled: true, credentials: {} })
         .mockReturnValueOnce({ enabled: false, credentials: {} });
 
       server = new CostManagementMCPServer();
+      await server.start();
 
       expect(mockConfig.getProviderConfig).toHaveBeenCalledTimes(2);
     });

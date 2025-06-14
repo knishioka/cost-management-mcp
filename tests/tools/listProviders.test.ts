@@ -33,9 +33,9 @@ describe('listProvidersTool', () => {
 
     const response = JSON.parse(result.content[0].text);
     expect(response.success).toBe(true);
-    expect(response.data.providers).toHaveLength(4); // 2 configured + 2 not configured
+    expect(response.data.providers).toHaveLength(3); // 2 configured + 1 not configured
     expect(response.data.configured).toBe(2);
-    expect(response.data.total).toBe(4);
+    expect(response.data.total).toBe(3);
 
     const aws = response.data.providers.find((p: any) => p.name === 'aws');
     expect(aws).toEqual({
@@ -85,7 +85,7 @@ describe('listProvidersTool', () => {
     const response = JSON.parse(result.content[0].text);
     expect(response.success).toBe(true);
     expect(response.data.configured).toBe(0);
-    expect(response.data.total).toBe(4);
+    expect(response.data.total).toBe(3);
     expect(response.data.providers.every((p: any) => p.status === 'not_configured')).toBe(true);
   });
 });
