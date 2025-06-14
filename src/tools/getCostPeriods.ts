@@ -4,7 +4,7 @@ import { parseDate, logger } from '../common/utils';
 import { ValidationError } from '../common/errors';
 
 const GetCostPeriodsSchema = z.object({
-  provider: z.enum(['aws', 'gcp', 'openai', 'anthropic']).optional(),
+  provider: z.enum(['aws', 'gcp', 'openai']).optional(),
   period1: z.object({
     startDate: z.string(),
     endDate: z.string(),

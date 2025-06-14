@@ -4,7 +4,7 @@ import { logger } from '../common/utils';
 import { ValidationError } from '../common/errors';
 
 const GetCostTrendsSchema = z.object({
-  provider: z.enum(['aws', 'gcp', 'openai', 'anthropic']).optional(),
+  provider: z.enum(['aws', 'gcp', 'openai']).optional(),
   period: z.enum(['30d', '60d', '90d', '6m', '1y']).default('30d'),
   granularity: z.enum(['daily', 'weekly', 'monthly']).default('daily'),
 });

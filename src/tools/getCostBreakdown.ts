@@ -4,7 +4,7 @@ import { parseDate, logger } from '../common/utils';
 import { ValidationError } from '../common/errors';
 
 const GetCostBreakdownSchema = z.object({
-  provider: z.enum(['aws', 'gcp', 'openai', 'anthropic']).optional(),
+  provider: z.enum(['aws', 'gcp', 'openai']).optional(),
   startDate: z.string(),
   endDate: z.string(),
   dimensions: z.array(z.enum(['service', 'region', 'date', 'tag'])).default(['service']),

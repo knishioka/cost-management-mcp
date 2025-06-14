@@ -12,7 +12,6 @@ import { listProvidersTool } from './tools/listProviders';
 import { checkBalanceTool } from './tools/checkBalance';
 import { getOpenAICostsTool } from './tools/getOpenAICosts';
 import { getAWSCostsTool } from './tools/getAWSCosts';
-import { getAnthropicUsageTool } from './tools/getAnthropicUsage';
 import { compareProvidersTool } from './tools/compareProviders';
 import { getCostTrendsTool } from './tools/getCostTrends';
 import { getCostBreakdownTool } from './tools/getCostBreakdown';
@@ -20,7 +19,6 @@ import { getCostPeriodsTool } from './tools/getCostPeriods';
 import { AWSCostClient } from './providers/aws';
 import { GCPCostClient } from './providers/gcp';
 import { OpenAICostClient } from './providers/openai';
-import { AnthropicCostClient } from './providers/anthropic';
 
 export class CostManagementMCPServer {
   private server: Server;
@@ -78,9 +76,6 @@ export class CostManagementMCPServer {
       case 'openai':
         return new OpenAICostClient(providerConfig.credentials as any);
 
-      case 'anthropic':
-        return new AnthropicCostClient(providerConfig.credentials as any);
-
       default:
         logger.warn(`Provider ${providerName} not implemented yet`);
         return null;
@@ -111,9 +106,6 @@ export class CostManagementMCPServer {
 
           case 'aws.costs':
             return await getAWSCostsTool(args, this.providers);
-
-          case 'anthropic.usage':
-            return await getAnthropicUsageTool(args, this.providers);
 
           case 'provider.compare':
             return await compareProvidersTool(args, this.providers);
@@ -167,7 +159,7 @@ export class CostManagementMCPServer {
           properties: {
             provider: {
               type: 'string',
-              enum: ['aws', 'gcp', 'openai', 'anthropic'],
+              enum: ['aws', 'gcp', 'openai'],
               description: 'The provider to get costs for (optional, defaults to all)',
             },
             startDate: {
@@ -209,7 +201,7 @@ export class CostManagementMCPServer {
           properties: {
             provider: {
               type: 'string',
-              enum: ['aws', 'gcp', 'openai', 'anthropic'],
+              enum: ['aws', 'gcp', 'openai'],
               description: 'The provider to check balance for',
             },
           },
@@ -286,34 +278,6 @@ export class CostManagementMCPServer {
         },
       },
       {
-        name: 'anthropic.usage',
-        description: 'Get Anthropic usage information and cost estimation calculator',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            startDate: {
-              type: 'string',
-              description: 'Start date in YYYY-MM-DD format',
-            },
-            endDate: {
-              type: 'string',
-              description: 'End date in YYYY-MM-DD format',
-            },
-            estimatedUsage: {
-              type: 'object',
-              description: 'Estimated token usage for cost calculation',
-              properties: {
-                claude3Opus: { type: 'number' },
-                claude3Sonnet: { type: 'number' },
-                claude3Haiku: { type: 'number' },
-                claude2: { type: 'number' },
-              },
-            },
-          },
-          required: ['startDate', 'endDate'],
-        },
-      },
-      {
         name: 'provider.compare',
         description: 'Compare costs across all configured providers',
         inputSchema: {
@@ -344,7 +308,7 @@ export class CostManagementMCPServer {
           properties: {
             provider: {
               type: 'string',
-              enum: ['aws', 'gcp', 'openai', 'anthropic'],
+              enum: ['aws', 'gcp', 'openai'],
               description: 'Specific provider to analyze (optional)',
             },
             period: {
@@ -370,7 +334,7 @@ export class CostManagementMCPServer {
           properties: {
             provider: {
               type: 'string',
-              enum: ['aws', 'gcp', 'openai', 'anthropic'],
+              enum: ['aws', 'gcp', 'openai'],
               description: 'Specific provider to analyze (optional)',
             },
             startDate: {
@@ -411,7 +375,7 @@ export class CostManagementMCPServer {
           properties: {
             provider: {
               type: 'string',
-              enum: ['aws', 'gcp', 'openai', 'anthropic'],
+              enum: ['aws', 'gcp', 'openai'],
               description: 'Specific provider to analyze (optional)',
             },
             period1: {

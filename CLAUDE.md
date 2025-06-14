@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a Model Context Protocol (MCP) server that provides unified cost monitoring across multiple cloud and API providers (AWS, GCP, OpenAI, Anthropic). The server allows users to retrieve cost data, monitor usage, and track expenses across different services through a consistent interface.
+This is a Model Context Protocol (MCP) server that provides unified cost monitoring across multiple cloud and API providers (AWS, GCP, OpenAI). The server allows users to retrieve cost data, monitor usage, and track expenses across different services through a consistent interface.
 
 ## Key Commands
 
@@ -39,7 +39,7 @@ git commit --no-verify -m "your message"
 
 ### Provider Structure
 
-Each provider (AWS, GCP, OpenAI, Anthropic) has:
+Each provider (AWS, GCP, OpenAI) has:
 
 - `client.ts` - API client implementation
 - `types.ts` - TypeScript type definitions
@@ -49,7 +49,7 @@ Each provider (AWS, GCP, OpenAI, Anthropic) has:
 
 ```typescript
 interface UnifiedCostData {
-  provider: 'aws' | 'gcp' | 'openai' | 'anthropic';
+  provider: 'aws' | 'gcp' | 'openai';
   period: { start: Date; end: Date };
   costs: {
     total: number;
@@ -154,13 +154,6 @@ interface UnifiedCostData {
 - REST API with Bearer token auth
 - Provides granular usage data
 - Can filter by API key, project, model
-
-### Anthropic
-
-- Currently no programmatic API
-- Implement placeholder for manual entry
-- Prepare structure for future API support
-- Document console access method
 
 ## Environment Setup
 

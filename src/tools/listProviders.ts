@@ -25,7 +25,7 @@ export async function listProvidersTool(
     }
   }
 
-  const allProviders = ['aws', 'gcp', 'openai', 'anthropic'];
+  const allProviders = ['aws', 'gcp', 'openai'];
   for (const name of allProviders) {
     if (!providers.has(name)) {
       providerList.push({
@@ -40,7 +40,7 @@ export async function listProvidersTool(
     success: true,
     data: {
       providers: providerList,
-      configured: providerList.filter(p => p.configured).length,
+      configured: providerList.filter((p) => p.configured).length,
       total: providerList.length,
     },
   };

@@ -10,25 +10,22 @@ const EnvSchema = z.object({
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
   AWS_REGION: z.string().default('us-east-1'),
-  
+
   // GCP
   GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
   GCP_BILLING_ACCOUNT_ID: z.string().optional(),
-  
+
   // OpenAI
   OPENAI_API_KEY: z.string().optional(),
-  
-  // Anthropic
-  ANTHROPIC_API_KEY: z.string().optional(),
-  
+
   // Cache
   CACHE_TTL: z.string().transform(Number).default('3600'),
   CACHE_TYPE: z.enum(['memory', 'redis']).default('memory'),
   REDIS_URL: z.string().optional(),
-  
+
   // Logging
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
-  
+
   // MCP Server
   MCP_SERVER_PORT: z.string().transform(Number).default('3000'),
 });
@@ -39,10 +36,7 @@ export class Config {
   constructor() {
     const result = EnvSchema.safeParse(process.env);
     if (!result.success) {
-      throw new ConfigurationError(
-        'Invalid environment configuration',
-        result.error.errors,
-      );
+      throw new ConfigurationError('Invalid environment configuration', result.error.errors);
     }
     this.env = result.data;
   }
@@ -58,7 +52,7 @@ export class Config {
             region: this.env.AWS_REGION,
           },
         };
-      
+
       case 'gcp':
         return {
           enabled: !!(this.env.GOOGLE_APPLICATION_CREDENTIALS && this.env.GCP_BILLING_ACCOUNT_ID),
@@ -67,7 +61,7 @@ export class Config {
             billingAccountId: this.env.GCP_BILLING_ACCOUNT_ID || '',
           },
         };
-      
+
       case 'openai':
         return {
           enabled: !!this.env.OPENAI_API_KEY,
@@ -75,15 +69,7 @@ export class Config {
             apiKey: this.env.OPENAI_API_KEY || '',
           },
         };
-      
-      case 'anthropic':
-        return {
-          enabled: !!this.env.ANTHROPIC_API_KEY,
-          credentials: {
-            apiKey: this.env.ANTHROPIC_API_KEY || '',
-          },
-        };
-      
+
       default:
         throw new ConfigurationError(`Unknown provider: ${provider}`);
     }
@@ -109,8 +95,8 @@ export class Config {
   }
 
   getEnabledProviders(): string[] {
-    const providers = ['aws', 'gcp', 'openai', 'anthropic'];
-    return providers.filter(provider => {
+    const providers = ['aws', 'gcp', 'openai'];
+    return providers.filter((provider) => {
       const config = this.getProviderConfig(provider);
       return config.enabled;
     });

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-export type Provider = 'aws' | 'gcp' | 'openai' | 'anthropic';
+export type Provider = 'aws' | 'gcp' | 'openai';
 
-export const ProviderSchema = z.enum(['aws', 'gcp', 'openai', 'anthropic']);
+export const ProviderSchema = z.enum(['aws', 'gcp', 'openai']);
 
 export const DateRangeSchema = z.object({
   start: z.date(),
@@ -17,10 +17,12 @@ export interface DateRange {
 export const CostBreakdownSchema = z.object({
   service: z.string(),
   amount: z.number(),
-  usage: z.optional(z.object({
-    quantity: z.number(),
-    unit: z.string(),
-  })),
+  usage: z.optional(
+    z.object({
+      quantity: z.number(),
+      unit: z.string(),
+    }),
+  ),
 });
 
 export interface CostBreakdown {
@@ -91,11 +93,13 @@ export interface ProviderClient {
 export const ToolResponseSchema = z.object({
   success: z.boolean(),
   data: z.any().optional(),
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-    details: z.any().optional(),
-  }).optional(),
+  error: z
+    .object({
+      code: z.string(),
+      message: z.string(),
+      details: z.any().optional(),
+    })
+    .optional(),
 });
 
 export interface ToolResponse<T = any> {

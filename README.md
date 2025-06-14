@@ -20,7 +20,7 @@ Once integrated with Claude Desktop, you can ask:
 
 ## Features
 
-- 🔍 Unified cost tracking across AWS, GCP, OpenAI, and Anthropic
+- 🔍 Unified cost tracking across AWS, GCP, and OpenAI
 - 💾 Intelligent caching to minimize API costs
 - 📊 Flexible date ranges and granularity options
 - 🔐 Secure credential management via environment variables
@@ -38,7 +38,7 @@ This server provides three powerful tools for cost management:
 **Get detailed cost breakdowns**
 
 - Check costs for any date range
-- Filter by specific provider (AWS, GCP, OpenAI, Anthropic)
+- Filter by specific provider (AWS, GCP, OpenAI)
 - View daily, monthly, or total costs
 - See service-level breakdowns
 
@@ -96,20 +96,6 @@ Example usage:
 - "What are my EC2 costs this month?"
 - "Show AWS costs grouped by service"
 - "Give me AWS cost optimization tips"
-
-### 🤖 `anthropic.usage`
-
-**Anthropic usage estimation**
-
-- Cost calculator for Claude models
-- Token-based pricing estimates
-- Console usage link
-- Model pricing reference
-
-Example usage:
-
-- "Estimate costs for 1M Claude 3 Opus tokens"
-- "Show Anthropic pricing for all models"
 
 ### 📈 `provider.compare`
 
@@ -184,7 +170,6 @@ Example usage:
   - [provider.balance](#-providerbalance)
   - [openai.costs](#-openaicosts)
   - [aws.costs](#️-awscosts)
-  - [anthropic.usage](#-anthropicusage)
   - [provider.compare](#-providercompare)
 - [Provider Setup](#provider-setup)
 - [Configuration](#configuration)
@@ -289,7 +274,7 @@ Retrieve cost data for specified providers and time periods.
 
 **Parameters:**
 
-- `provider` (optional): Specific provider to query ('aws', 'gcp', 'openai', 'anthropic')
+- `provider` (optional): Specific provider to query ('aws', 'gcp', 'openai')
 - `startDate` (required): Start date in YYYY-MM-DD format
 - `endDate` (required): End date in YYYY-MM-DD format
 - `granularity` (optional): 'daily', 'monthly', or 'total' (default: 'total')
@@ -473,21 +458,6 @@ _Note: Currently not implemented for most providers_
 
 ⚠️ **Note**: The Usage API is relatively new (December 2024). Ensure your account has access.
 
-### Anthropic
-
-_Note: Anthropic currently doesn't provide a billing API. The provider returns placeholder data._
-
-To view Anthropic costs:
-
-1. Log in to [Anthropic Console](https://console.anthropic.com)
-2. Navigate to Settings → Usage
-
-Set the API key anyway for future compatibility:
-
-```bash
-ANTHROPIC_API_KEY=your-api-key
-```
-
 ## Configuration
 
 ### Environment Variables
@@ -500,7 +470,6 @@ ANTHROPIC_API_KEY=your-api-key
 | `GOOGLE_APPLICATION_CREDENTIALS` | Path to GCP service account JSON      | -         | For GCP        |
 | `GCP_BILLING_ACCOUNT_ID`         | GCP billing account ID                | -         | For GCP        |
 | `OPENAI_API_KEY`                 | OpenAI API key                        | -         | For OpenAI     |
-| `ANTHROPIC_API_KEY`              | Anthropic API key                     | -         | For Anthropic  |
 | `CACHE_TTL`                      | Cache time-to-live in seconds         | 3600      | No             |
 | `CACHE_TYPE`                     | Cache backend (memory/redis)          | memory    | No             |
 | `REDIS_URL`                      | Redis connection URL                  | -         | If using Redis |
@@ -553,7 +522,6 @@ cost-management-mcp/
 │   │   ├── aws/         # AWS Cost Explorer
 │   │   ├── gcp/         # Google Cloud Billing
 │   │   ├── openai/      # OpenAI Usage API
-│   │   └── anthropic/   # Anthropic (placeholder)
 │   ├── tools/           # MCP tool implementations
 │   │   ├── getCosts.ts
 │   │   ├── listProviders.ts
@@ -754,7 +722,7 @@ Cost Management MCPは、複数のクラウドプロバイダーとAPIサービ�
 
 ### 主な機能
 
-- 🔍 AWS、GCP、OpenAI、Anthropicのコストを一元管理
+- 🔍 AWS、GCP、OpenAIのコストを一元管理
 - 💾 APIコストを最小限に抑えるインテリジェントキャッシング
 - 📊 柔軟な日付範囲と集計オプション
 - 🔐 環境変数による安全な認証情報管理
@@ -772,7 +740,7 @@ Cost Management MCPは、複数のクラウドプロバイダーとAPIサービ�
 **詳細なコスト内訳を取得**
 
 - 任意の期間のコストをチェック
-- 特定のプロバイダー（AWS、GCP、OpenAI、Anthropic）でフィルタリング
+- 特定のプロバイダー（AWS、GCP、OpenAI）でフィルタリング
 - 日次、月次、または合計コストを表示
 - サービスレベルの内訳を確認
 

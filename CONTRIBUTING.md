@@ -5,6 +5,7 @@ Thank you for your interest in contributing to Cost Management MCP! This documen
 ## Code of Conduct
 
 By participating in this project, you agree to abide by our Code of Conduct:
+
 - Be respectful and inclusive
 - Welcome newcomers and help them get started
 - Focus on constructive criticism
@@ -14,7 +15,7 @@ By participating in this project, you agree to abide by our Code of Conduct:
 
 ### Reporting Issues
 
-1. Check if the issue already exists in the [issue tracker](https://github.com/yourusername/cost-management-mcp/issues)
+1. Check if the issue already exists in the [issue tracker](https://github.com/knishioka/cost-management-mcp/issues)
 2. If not, create a new issue with:
    - Clear, descriptive title
    - Detailed description of the problem
@@ -38,12 +39,12 @@ By participating in this project, you agree to abide by our Code of Conduct:
 1. Fork the repository
 2. Clone your fork:
    ```bash
-   git clone https://github.com/yourusername/cost-management-mcp.git
+   git clone https://github.com/knishioka/cost-management-mcp.git
    cd cost-management-mcp
    ```
 3. Add upstream remote:
    ```bash
-   git remote add upstream https://github.com/originalowner/cost-management-mcp.git
+   git remote add upstream https://github.com/knishioka/cost-management-mcp.git
    ```
 4. Install dependencies:
    ```bash
@@ -53,6 +54,7 @@ By participating in this project, you agree to abide by our Code of Conduct:
 #### Development Workflow
 
 1. Create a feature branch:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -60,23 +62,27 @@ By participating in this project, you agree to abide by our Code of Conduct:
 2. Make your changes following our coding standards
 
 3. Write/update tests:
+
    ```bash
    npm test
    ```
 
 4. Run linting:
+
    ```bash
    npm run lint
    npm run typecheck
    ```
 
 5. Commit your changes:
+
    ```bash
    git add .
    git commit -m "feat: add new feature"
    ```
-   
+
    Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
    - `feat:` New feature
    - `fix:` Bug fix
    - `docs:` Documentation changes
@@ -86,6 +92,7 @@ By participating in this project, you agree to abide by our Code of Conduct:
    - `chore:` Build process or auxiliary tool changes
 
 6. Push to your fork:
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -136,15 +143,16 @@ export async function getData(p, params) {
 - Aim for 80%+ code coverage
 
 Example test:
+
 ```typescript
 describe('getCostData', () => {
   it('should return cached data when available', async () => {
     // Arrange
     const mockCache = { get: jest.fn().mockResolvedValue(cachedData) };
-    
+
     // Act
     const result = await getCostData('aws', params);
-    
+
     // Assert
     expect(result).toEqual(cachedData);
     expect(mockCache.get).toHaveBeenCalledWith('aws', params);
@@ -162,6 +170,7 @@ describe('getCostData', () => {
 ### Adding a New Provider
 
 1. Create provider structure:
+
    ```
    src/providers/newprovider/
    ├── types.ts      # TypeScript interfaces
@@ -171,16 +180,17 @@ describe('getCostData', () => {
    ```
 
 2. Implement `ProviderClient` interface:
+
    ```typescript
    export class NewProviderClient implements ProviderClient {
      async getCosts(params: CostQueryParams): Promise<UnifiedCostData> {
        // Implementation
      }
-     
+
      async validateCredentials(): Promise<boolean> {
        // Implementation
      }
-     
+
      getProviderName(): Provider {
        return 'newprovider';
      }
@@ -210,6 +220,7 @@ describe('getCostData', () => {
 ## Recognition
 
 Contributors will be recognized in:
+
 - GitHub contributors list
 - Release notes
 - Special mentions for significant contributions
