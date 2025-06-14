@@ -266,21 +266,43 @@ What are my OpenAI API costs for the last 7 days?
 List all my configured cloud providers.
 ```
 
-### Integration with Claude Code (VS Code Extension)
+### Integration with Claude Code
 
-Claude Code automatically manages MCP servers. To use this cost management server:
+Claude Code supports MCP servers through two configuration methods:
 
-1. Build the project:
+#### Method 1: Project-specific configuration (Recommended)
 
-```bash
-npm run build
+Create a `.mcp.json` file in your project root:
+
+```json
+{
+  "mcpServers": {
+    "cost-management": {
+      "command": "node",
+      "args": ["/absolute/path/to/cost-management-mcp/dist/index.js"],
+      "env": {
+        "AWS_ACCESS_KEY_ID": "your-aws-access-key",
+        "AWS_SECRET_ACCESS_KEY": "your-aws-secret-key",
+        "AWS_REGION": "us-east-1",
+        "OPENAI_API_KEY": "sk-...your-openai-key",
+        "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/gcp-service-account.json",
+        "GCP_BILLING_ACCOUNT_ID": "your-billing-account-id",
+        "CACHE_TTL": "3600",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}
 ```
 
-2. Add the following configuration to your VS Code settings:
-   - Open VS Code Settings (Cmd/Ctrl + ,)
-   - Search for "Claude Code MCP Servers"
-   - Click "Edit in settings.json"
-   - Add the cost management server configuration:
+This configuration will be automatically loaded when you open the project in Claude Code.
+
+#### Method 2: VS Code settings (Global configuration)
+
+1. Open VS Code Settings (Cmd/Ctrl + ,)
+2. Search for "Claude Code MCP Servers"
+3. Click "Edit in settings.json"
+4. Add the cost management server configuration:
 
 ```json
 {
@@ -303,11 +325,11 @@ npm run build
 }
 ```
 
-3. Reload VS Code window (Cmd/Ctrl + Shift + P → "Developer: Reload Window")
+5. Reload VS Code window (Cmd/Ctrl + Shift + P → "Developer: Reload Window")
 
-4. The MCP server will start automatically when you use Claude Code
+#### Using the Cost Management Server
 
-5. You can now ask Claude Code about your cloud costs:
+Once configured, you can ask Claude Code about your cloud costs:
 
 ```
 📊 "What are my AWS costs for this month?"
@@ -316,7 +338,11 @@ npm run build
 💰 "Compare costs across all providers"
 ```
 
-**Note**: Make sure to replace the paths and API keys with your actual values. The cache is optional - if not configured, the server will work without caching.
+**Security Note**:
+
+- For project-specific `.mcp.json`, add it to `.gitignore` to avoid committing sensitive API keys
+- Consider using environment variables or a secrets manager for production use
+- The cache is optional - if not configured, the server will work without caching
 
 ## Available Tools
 
@@ -861,21 +887,43 @@ Claude Desktopの設定ファイルに以下を追加：
 }
 ```
 
-### Claude Code (VS Code拡張機能)との統合
+### Claude Codeとの統合
 
-Claude CodeはMCPサーバーを自動的に管理します。このコスト管理サーバーを使用するには：
+Claude Codeは2つの設定方法でMCPサーバーをサポートしています：
 
-1. プロジェクトをビルド：
+#### 方法1: プロジェクト固有の設定（推奨）
 
-```bash
-npm run build
+プロジェクトのルートディレクトリに `.mcp.json` ファイルを作成：
+
+```json
+{
+  "mcpServers": {
+    "cost-management": {
+      "command": "node",
+      "args": ["/absolute/path/to/cost-management-mcp/dist/index.js"],
+      "env": {
+        "AWS_ACCESS_KEY_ID": "your-aws-access-key",
+        "AWS_SECRET_ACCESS_KEY": "your-aws-secret-key",
+        "AWS_REGION": "us-east-1",
+        "OPENAI_API_KEY": "sk-...your-openai-key",
+        "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/gcp-service-account.json",
+        "GCP_BILLING_ACCOUNT_ID": "your-billing-account-id",
+        "CACHE_TTL": "3600",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}
 ```
 
-2. VS Codeの設定に以下を追加：
-   - VS Code設定を開く（Cmd/Ctrl + ,）
-   - 「Claude Code MCP Servers」を検索
-   - 「settings.jsonで編集」をクリック
-   - コスト管理サーバーの設定を追加：
+この設定は、Claude Codeでプロジェクトを開いたときに自動的に読み込まれます。
+
+#### 方法2: VS Code設定（グローバル設定）
+
+1. VS Code設定を開く（Cmd/Ctrl + ,）
+2. 「Claude Code MCP Servers」を検索
+3. 「settings.jsonで編集」をクリック
+4. コスト管理サーバーの設定を追加：
 
 ```json
 {
@@ -896,11 +944,11 @@ npm run build
 }
 ```
 
-3. VS Codeウィンドウをリロード（Cmd/Ctrl + Shift + P → 「開発者: ウィンドウの再読み込み」）
+5. VS Codeウィンドウをリロード（Cmd/Ctrl + Shift + P → 「開発者: ウィンドウの再読み込み」）
 
-4. Claude Code使用時にMCPサーバーが自動的に起動します
+#### コスト管理サーバーの使用
 
-5. Claude Codeでクラウドコストについて質問できます：
+設定が完了したら、Claude Codeでクラウドコストについて質問できます：
 
 ```
 📊 「今月のAWSコストを教えて」
@@ -908,6 +956,12 @@ npm run build
 🔍 「サービス別にクラウド費用を分析」
 💰 「全プロバイダーのコストを比較」
 ```
+
+**セキュリティに関する注意**:
+
+- プロジェクト固有の `.mcp.json` は `.gitignore` に追加して、APIキーをコミットしないようにしてください
+- 本番環境では環境変数やシークレット管理ツールの使用を検討してください
+- キャッシュはオプションです - 設定されていない場合、サーバーはキャッシュなしで動作します
 
 ### 使用例
 

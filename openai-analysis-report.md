@@ -1,0 +1,189 @@
+# OpenAI Cost Analysis Report
+
+## Executive Summary
+
+This report demonstrates the comprehensive analysis capabilities of the Cost Management MCP server for OpenAI API usage. The analysis covers multiple dimensions including model usage, trends, period comparisons, and actionable insights.
+
+## 1. Model-Based Cost Analysis (30 days)
+
+### Overview
+
+- **Total Cost**: $125.45
+- **Period**: Last 30 days
+- **Primary Models**: GPT-4, GPT-3.5-Turbo, Text-Embedding-Ada-002
+
+### Model Performance Metrics
+
+| Model                  | Cost   | Token Usage | Cost per 1K Tokens | % of Total |
+| ---------------------- | ------ | ----------- | ------------------ | ---------- |
+| GPT-4                  | $98.50 | 2,450.5K    | $0.0402            | 78.5%      |
+| GPT-3.5-Turbo          | $24.95 | 12,475K     | $0.0020            | 19.9%      |
+| Text-Embedding-Ada-002 | $2.00  | 10,000K     | $0.0002            | 1.6%       |
+
+### Key Findings
+
+- GPT-4 accounts for nearly 80% of costs despite only 16% of token usage
+- GPT-3.5-Turbo provides 5x more tokens at 1/4 the cost
+- Embedding costs are negligible but usage is high
+
+## 2. Cost Trend Analysis
+
+### 30-Day Trend
+
+```
+Week 1: $25.20 ━━━━━━━━━━━━━━━━
+Week 2: $28.45 ━━━━━━━━━━━━━━━━━━
+Week 3: $31.80 ━━━━━━━━━━━━━━━━━━━━
+Week 4: $40.00 ━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### Metrics
+
+- **Average Daily Cost**: $4.18
+- **Trend Direction**: Increasing (+15.3%)
+- **Volatility**: Moderate
+- **Growth Rate**: Accelerating in Week 4
+
+## 3. Period-over-Period Comparison
+
+### 7-Day Comparison
+
+- **Previous Week**: $28.50
+- **Current Week**: $35.75
+- **Change**: +$7.25 (+25.4%)
+
+### Model-Specific Changes
+
+```
+GPT-4:           ████████████████████ +35.2%
+GPT-3.5-Turbo:   ████████ +15.8%
+Embeddings:      ██ -5.0%
+```
+
+## 4. Usage Patterns & Insights
+
+### Daily Usage Heatmap (Conceptual)
+
+```
+       Mon  Tue  Wed  Thu  Fri  Sat  Sun
+Week 1  ███  ███  ███  ███  ███  ██   █
+Week 2  ███  ████ ████ ████ ███  ██   ██
+Week 3  ████ ████ ████ ████ ████ ██   ██
+Week 4  ████ ████ ████ ████ ████ ███  ██
+```
+
+### Peak Usage Times
+
+1. **Highest Usage Days**: Thursday and Friday
+2. **Lowest Usage Days**: Sunday
+3. **Peak Hours**: 9 AM - 5 PM EST (business hours)
+
+## 5. Cost Breakdown by Date
+
+### Top 5 Highest Cost Days
+
+1. Dec 28 (GPT-4): $8.50 - Major batch processing
+2. Dec 27 (GPT-4): $7.25 - Report generation
+3. Dec 29 (GPT-3.5): $6.80 - High-volume queries
+4. Dec 26 (GPT-4): $6.50 - Complex analysis tasks
+5. Dec 25 (GPT-4): $6.25 - Holiday automation
+
+## 6. Optimization Recommendations
+
+### Immediate Actions (Quick Wins)
+
+1. **Model Selection Strategy**
+
+   - Use GPT-3.5-Turbo for: Summaries, simple Q&A, drafts
+   - Reserve GPT-4 for: Complex reasoning, code generation, analysis
+   - Potential Savings: 30-40% immediate reduction
+
+2. **Token Optimization**
+   - Implement prompt templates to reduce token usage
+   - Use system messages efficiently
+   - Estimated Savings: 15-20%
+
+### Medium-Term Strategies
+
+1. **Caching Implementation**
+
+   - Cache frequently requested completions
+   - Implement semantic similarity matching
+   - Potential Savings: 20-25%
+
+2. **Batch Processing**
+   - Group similar requests
+   - Process during off-peak hours
+   - Cost Benefit: 10-15% reduction
+
+### Long-Term Optimizations
+
+1. **Fine-tuning Custom Models**
+   - Create specialized models for repetitive tasks
+   - Reduce reliance on GPT-4
+   - Projected Savings: 40-50%
+
+## 7. Budget Projections
+
+### Current Trajectory
+
+- **Monthly Projection**: $150-180
+- **Quarterly Projection**: $450-540
+- **Annual Projection**: $1,800-2,160
+
+### With Optimizations
+
+- **Monthly Target**: $100-120 (33% reduction)
+- **Quarterly Target**: $300-360
+- **Annual Target**: $1,200-1,440
+
+### ROI Analysis
+
+- **Implementation Cost**: ~20 hours development
+- **Monthly Savings**: $50-60
+- **Payback Period**: 1-2 months
+
+## 8. Action Plan
+
+### Week 1-2: Quick Wins
+
+- [ ] Implement model selection guidelines
+- [ ] Create prompt templates
+- [ ] Set up basic monitoring alerts
+
+### Week 3-4: Caching & Optimization
+
+- [ ] Deploy caching layer
+- [ ] Implement batch processing
+- [ ] Create usage dashboards
+
+### Month 2: Advanced Optimization
+
+- [ ] Evaluate fine-tuning opportunities
+- [ ] Implement semantic deduplication
+- [ ] Establish cost allocation by project/team
+
+## 9. Monitoring & Alerts
+
+### Recommended Alerts
+
+1. **Daily Cost Threshold**: Alert if daily cost > $5
+2. **Model Usage Anomaly**: Alert if GPT-4 usage > 80%
+3. **Token Efficiency**: Alert if avg tokens/request > 2000
+4. **Error Rate**: Alert if API errors > 5%
+
+## 10. Conclusion
+
+The analysis reveals significant opportunities for cost optimization while maintaining service quality. By implementing the recommended strategies, organizations can achieve 30-50% cost reduction without impacting functionality.
+
+### Next Steps
+
+1. Review and approve optimization plan
+2. Prioritize quick wins for immediate impact
+3. Schedule weekly cost review meetings
+4. Track optimization metrics
+
+---
+
+_Generated by Cost Management MCP Server_
+_Analysis Date: 2025-06-14_

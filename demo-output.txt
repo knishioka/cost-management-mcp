@@ -1,0 +1,116 @@
+=== MCP Server OpenAI Cost Retrieval Demo ===
+
+When you run the MCP server with a valid OpenAI API key, you would see output like this:
+
+1. Server Start:
+```
+[info] Running without cache
+[info] Provider openai initialized
+[info] Cost Management MCP Server started
+```
+
+2. Request:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "openai.costs",
+    "arguments": {
+      "startDate": "2025-06-07",
+      "endDate": "2025-06-14",
+      "groupByModel": true,
+      "includeTokenUsage": true
+    }
+  }
+}
+```
+
+3. Expected Response (with valid API key):
+```json
+{
+  "success": true,
+  "data": {
+    "provider": "openai",
+    "period": {
+      "start": "2025-06-07",
+      "end": "2025-06-14"
+    },
+    "costs": {
+      "total": 12.45,
+      "currency": "USD",
+      "breakdown": [
+        {
+          "date": "2025-06-07",
+          "amount": 1.23,
+          "service": "gpt-4"
+        },
+        {
+          "date": "2025-06-08",
+          "amount": 2.45,
+          "service": "gpt-4"
+        }
+      ]
+    },
+    "models": [
+      {
+        "model": "gpt-4",
+        "cost": 10.50,
+        "usage": {
+          "totalTokens": 150000,
+          "promptTokens": 100000,
+          "completionTokens": 50000
+        }
+      },
+      {
+        "model": "gpt-3.5-turbo",
+        "cost": 1.95,
+        "usage": {
+          "totalTokens": 500000,
+          "promptTokens": 400000,
+          "completionTokens": 100000
+        }
+      }
+    ],
+    "dailyUsage": [
+      {
+        "date": "2025-06-07",
+        "cost": 1.23,
+        "requests": 45
+      },
+      {
+        "date": "2025-06-08",
+        "cost": 2.45,
+        "requests": 67
+      }
+    ]
+  }
+}
+```
+
+4. MCP Client Configuration:
+
+To use this with Claude Desktop or another MCP client, add to your config:
+
+```json
+{
+  "mcpServers": {
+    "cost-management": {
+      "command": "node",
+      "args": ["/path/to/cost-management-mcp/dist/index.js"],
+      "env": {
+        "OPENAI_API_KEY": "sk-...your-actual-key..."
+      }
+    }
+  }
+}
+```
+
+5. Available Tools:
+- cost.get - Get costs for any provider
+- openai.costs - Get detailed OpenAI costs with model breakdown
+- provider.list - List configured providers
+- cost.trends - Analyze cost trends
+- cost.breakdown - Get cost breakdown by dimensions
+- cost.periods - Compare costs between periods

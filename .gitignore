@@ -45,3 +45,7 @@ temp/
 !tsconfig.json
 !jest.config.json
 !mcp-config-example.json
+!.mcp.json.example
+
+# Claude Code configuration
+.mcp.json

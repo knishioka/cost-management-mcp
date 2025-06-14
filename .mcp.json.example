@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "cost-management": {
+      "command": "node",
+      "args": ["./dist/index.js"],
+      "env": {
+        "AWS_ACCESS_KEY_ID": "your-aws-access-key",
+        "AWS_SECRET_ACCESS_KEY": "your-aws-secret-key",
+        "AWS_REGION": "us-east-1",
+        "OPENAI_API_KEY": "sk-...your-openai-key",
+        "GOOGLE_APPLICATION_CREDENTIALS": "./path/to/gcp-service-account.json",
+        "GCP_BILLING_ACCOUNT_ID": "your-billing-account-id",
+        "CACHE_TTL": "3600",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}
