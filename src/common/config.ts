@@ -18,9 +18,9 @@ const EnvSchema = z.object({
   // OpenAI
   OPENAI_API_KEY: z.string().optional(),
 
-  // Cache
-  CACHE_TTL: z.string().transform(Number).default('3600'),
-  CACHE_TYPE: z.enum(['memory', 'redis']).default('memory'),
+  // Cache (optional)
+  CACHE_TTL: z.string().transform(Number).optional(),
+  CACHE_TYPE: z.enum(['memory', 'redis']).optional(),
   REDIS_URL: z.string().optional(),
 
   // Logging
@@ -75,10 +75,13 @@ export class Config {
     }
   }
 
-  getCacheConfig(): CacheConfig {
+  getCacheConfig(): CacheConfig | null {
+    if (!this.env.CACHE_TYPE) {
+      return null;
+    }
     return {
       type: this.env.CACHE_TYPE,
-      ttl: this.env.CACHE_TTL,
+      ttl: this.env.CACHE_TTL || 3600,
       redisUrl: this.env.REDIS_URL,
     };
   }

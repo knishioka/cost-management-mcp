@@ -1,15 +1,20 @@
 import { CloudBillingClient } from '@google-cloud/billing';
-import type { ProviderClient, CostQueryParams, UnifiedCostData, Provider } from '../../common/types';
+import type {
+  ProviderClient,
+  CostQueryParams,
+  UnifiedCostData,
+  Provider,
+} from '../../common/types';
 import { AuthenticationError, ProviderError, isRetryableError } from '../../common/errors';
 import { retry, logger } from '../../common/utils';
-import { getCache } from '../../common/cache';
+import { getCacheOrDefault } from '../../common/cache';
 import { transformGCPResponse, formatGCPDate } from './transformer';
 import type { GCPProviderConfig } from './types';
 
 export class GCPCostClient implements ProviderClient {
   private client: CloudBillingClient;
   private billingAccountId: string;
-  private cache = getCache();
+  private cache = getCacheOrDefault();
 
   constructor(config: GCPProviderConfig) {
     this.client = new CloudBillingClient({
@@ -26,16 +31,21 @@ export class GCPCostClient implements ProviderClient {
       groupBy: params.groupBy,
     };
 
-    const cached = await this.cache.getCostData<UnifiedCostData>('gcp', cacheKey);
-    if (cached) {
-      logger.debug('GCP: Cache hit', { cacheKey });
-      return {
-        ...cached,
-        metadata: {
-          ...cached.metadata,
-          source: 'cache',
-        },
-      };
+    // Try to get from cache if available
+    try {
+      const cached = await this.cache.getCostData<UnifiedCostData>('gcp', cacheKey);
+      if (cached) {
+        logger.debug('GCP: Cache hit', { cacheKey });
+        return {
+          ...cached,
+          metadata: {
+            ...cached.metadata,
+            source: 'cache',
+          },
+        };
+      }
+    } catch (cacheError) {
+      logger.debug('GCP: Cache not available or error', { error: cacheError });
     }
 
     logger.info('GCP: Fetching cost data', { params });
@@ -44,22 +54,24 @@ export class GCPCostClient implements ProviderClient {
       // Note: GCP Billing API v1 doesn't have a direct cost retrieval endpoint
       // We need to use BigQuery Export or Cloud Billing Budget API
       // For now, we'll use a placeholder that could be replaced with actual implementation
-      
-      const response = await retry(
-        () => this.fetchCostData(params),
-        {
-          maxAttempts: 3,
-          shouldRetry: (error) => isRetryableError(error),
-        },
-      );
+
+      const response = await retry(() => this.fetchCostData(params), {
+        maxAttempts: 3,
+        shouldRetry: (error) => isRetryableError(error),
+      });
 
       const transformed = transformGCPResponse(response, {
         start: params.startDate,
         end: params.endDate,
       });
 
-      await this.cache.setCostData('gcp', cacheKey, transformed);
-      
+      // Cache the result if cache is available
+      try {
+        await this.cache.setCostData('gcp', cacheKey, transformed);
+      } catch (cacheError) {
+        logger.warn('GCP: Failed to cache data', { error: cacheError });
+      }
+
       logger.info('GCP: Successfully fetched cost data', {
         total: transformed.costs.total,
         services: transformed.costs.breakdown.length,
@@ -68,7 +80,7 @@ export class GCPCostClient implements ProviderClient {
       return transformed;
     } catch (error) {
       logger.error('GCP: Failed to fetch cost data', error);
-      
+
       if (error instanceof Error) {
         if (error.message.includes('401') || error.message.includes('Unauthenticated')) {
           throw new AuthenticationError('gcp', 'Invalid credentials or permissions');
@@ -77,13 +89,8 @@ export class GCPCostClient implements ProviderClient {
           throw new AuthenticationError('gcp', 'Insufficient permissions for billing data');
         }
       }
-      
-      throw new ProviderError(
-        'gcp',
-        'Failed to fetch cost data',
-        'GCP_API_ERROR',
-        error,
-      );
+
+      throw new ProviderError('gcp', 'Failed to fetch cost data', 'GCP_API_ERROR', error);
     }
   }
 
@@ -92,7 +99,7 @@ export class GCPCostClient implements ProviderClient {
     // 1. Use BigQuery to query exported billing data
     // 2. Or use Cloud Billing Budgets API to get budget information
     // 3. Or use Cost Estimation API (beta)
-    
+
     // For now, we'll throw a not implemented error
     throw new ProviderError(
       'gcp',
@@ -107,7 +114,7 @@ export class GCPCostClient implements ProviderClient {
       const [account] = await this.client.getBillingAccount({
         name: `billingAccounts/${this.billingAccountId}`,
       });
-      
+
       return account.open === true;
     } catch (error) {
       logger.error('GCP: Credential validation failed', error);

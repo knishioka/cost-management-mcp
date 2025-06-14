@@ -1,19 +1,25 @@
-import { 
-  CostExplorerClient, 
-  GetCostAndUsageCommand,
+import type {
   GetCostAndUsageCommandInput,
-  CostExplorerClientConfig,
+  CostExplorerClientConfig} from '@aws-sdk/client-cost-explorer';
+import {
+  CostExplorerClient,
+  GetCostAndUsageCommand
 } from '@aws-sdk/client-cost-explorer';
-import type { ProviderClient, CostQueryParams, UnifiedCostData, Provider } from '../../common/types';
+import type {
+  ProviderClient,
+  CostQueryParams,
+  UnifiedCostData,
+  Provider,
+} from '../../common/types';
 import { AuthenticationError, ProviderError, isRetryableError } from '../../common/errors';
 import { retry, logger } from '../../common/utils';
-import { getCache } from '../../common/cache';
+import { getCacheOrDefault } from '../../common/cache';
 import { transformAWSResponse, formatAWSDate, getAWSGranularity } from './transformer';
 import type { AWSProviderConfig } from './types';
 
 export class AWSCostClient implements ProviderClient {
   private client: CostExplorerClient;
-  private cache = getCache();
+  private cache = getCacheOrDefault();
 
   constructor(config: AWSProviderConfig) {
     const clientConfig: CostExplorerClientConfig = {
@@ -35,36 +41,43 @@ export class AWSCostClient implements ProviderClient {
       groupBy: params.groupBy,
     };
 
-    const cached = await this.cache.getCostData<UnifiedCostData>('aws', cacheKey);
-    if (cached) {
-      logger.debug('AWS: Cache hit', { cacheKey });
-      return {
-        ...cached,
-        metadata: {
-          ...cached.metadata,
-          source: 'cache',
-        },
-      };
+    // Try to get from cache if available
+    try {
+      const cached = await this.cache.getCostData<UnifiedCostData>('aws', cacheKey);
+      if (cached) {
+        logger.debug('AWS: Cache hit', { cacheKey });
+        return {
+          ...cached,
+          metadata: {
+            ...cached.metadata,
+            source: 'cache',
+          },
+        };
+      }
+    } catch (cacheError) {
+      logger.debug('AWS: Cache not available or error', { error: cacheError });
     }
 
     logger.info('AWS: Fetching cost data', { params });
 
     try {
-      const response = await retry(
-        () => this.fetchCostData(params),
-        {
-          maxAttempts: 3,
-          shouldRetry: (error) => isRetryableError(error),
-        },
-      );
+      const response = await retry(() => this.fetchCostData(params), {
+        maxAttempts: 3,
+        shouldRetry: (error) => isRetryableError(error),
+      });
 
       const transformed = transformAWSResponse(response, {
         start: params.startDate,
         end: params.endDate,
       });
 
-      await this.cache.setCostData('aws', cacheKey, transformed);
-      
+      // Cache the result if cache is available
+      try {
+        await this.cache.setCostData('aws', cacheKey, transformed);
+      } catch (cacheError) {
+        logger.warn('AWS: Failed to cache data', { error: cacheError });
+      }
+
       logger.info('AWS: Successfully fetched cost data', {
         total: transformed.costs.total,
         services: transformed.costs.breakdown.length,
@@ -73,17 +86,12 @@ export class AWSCostClient implements ProviderClient {
       return transformed;
     } catch (error) {
       logger.error('AWS: Failed to fetch cost data', error);
-      
+
       if (error instanceof Error && error.name === 'UnrecognizedClientException') {
         throw new AuthenticationError('aws', 'Invalid AWS credentials');
       }
-      
-      throw new ProviderError(
-        'aws',
-        'Failed to fetch cost data',
-        'AWS_API_ERROR',
-        error,
-      );
+
+      throw new ProviderError('aws', 'Failed to fetch cost data', 'AWS_API_ERROR', error);
     }
   }
 
@@ -95,13 +103,15 @@ export class AWSCostClient implements ProviderClient {
       },
       Granularity: getAWSGranularity(params.granularity),
       Metrics: ['UnblendedCost', 'UsageQuantity'],
-      GroupBy: params.groupBy?.map(dimension => ({
+      GroupBy: params.groupBy?.map((dimension) => ({
         Type: 'DIMENSION',
         Key: dimension.toUpperCase(),
-      })) || [{
-        Type: 'DIMENSION',
-        Key: 'SERVICE',
-      }],
+      })) || [
+        {
+          Type: 'DIMENSION',
+          Key: 'SERVICE',
+        },
+      ],
     };
 
     const command = new GetCostAndUsageCommand(input);

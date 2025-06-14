@@ -412,9 +412,21 @@ export class CostManagementMCPServer {
 
   async start(): Promise<void> {
     const config = getConfig();
-    initializeCache(config.getCacheConfig());
 
-    // Initialize providers after cache is ready
+    // Initialize cache if configured
+    try {
+      const cacheConfig = config.getCacheConfig();
+      if (cacheConfig) {
+        initializeCache(cacheConfig);
+        logger.info('Cache initialized', { type: cacheConfig.type, ttl: cacheConfig.ttl });
+      } else {
+        logger.info('Running without cache');
+      }
+    } catch (error) {
+      logger.warn('Failed to initialize cache, continuing without cache', { error });
+    }
+
+    // Initialize providers
     this.initializeProviders();
 
     const transport = new StdioServerTransport();

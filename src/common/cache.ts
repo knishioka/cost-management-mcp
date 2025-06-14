@@ -79,15 +79,12 @@ export class CacheManager {
   private buildKey(provider: string, params: Record<string, any>): string {
     const sortedParams = Object.keys(params)
       .sort()
-      .map(key => `${key}:${params[key]}`)
+      .map((key) => `${key}:${params[key]}`)
       .join(':');
     return `${this.keyPrefix}:${provider}:${sortedParams}`;
   }
 
-  async getCostData<T>(
-    provider: string,
-    params: Record<string, any>,
-  ): Promise<T | undefined> {
+  async getCostData<T>(provider: string, params: Record<string, any>): Promise<T | undefined> {
     const key = this.buildKey(provider, params);
     return this.cache.get<T>(key);
   }
@@ -126,9 +123,60 @@ export function initializeCache(config: CacheConfig): CacheManager {
   return cacheManager;
 }
 
-export function getCache(): CacheManager {
+export function getCache(): CacheManager | null {
+  return cacheManager;
+}
+
+export function getCacheOrDefault(): CacheManager | NoOpCacheManager {
   if (!cacheManager) {
-    throw new CacheError('Cache not initialized. Call initializeCache() first.');
+    // Return a no-op cache manager if not initialized
+    return new NoOpCacheManager();
   }
   return cacheManager;
+}
+
+// No-op cache implementation that doesn't actually cache anything
+export class NoOpCache implements Cache {
+  async get<T>(_key: string): Promise<T | undefined> {
+    return undefined;
+  }
+
+  async set<T>(_key: string, _value: T, _ttl?: number): Promise<void> {
+    // Do nothing
+  }
+
+  async delete(_key: string): Promise<void> {
+    // Do nothing
+  }
+
+  async clear(): Promise<void> {
+    // Do nothing
+  }
+
+  async has(_key: string): Promise<boolean> {
+    return false;
+  }
+}
+
+export class NoOpCacheManager {
+  async getCostData<T>(_provider: string, _params: Record<string, any>): Promise<T | undefined> {
+    return undefined;
+  }
+
+  async setCostData<T>(
+    _provider: string,
+    _params: Record<string, any>,
+    _data: T,
+    _ttl?: number,
+  ): Promise<void> {
+    // No-op
+  }
+
+  async invalidateProvider(_provider: string): Promise<void> {
+    // No-op
+  }
+
+  async clearAll(): Promise<void> {
+    // No-op
+  }
 }
