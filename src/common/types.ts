@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-export type Provider = 'aws' | 'gcp' | 'openai';
+export type Provider = 'aws' | 'openai';
 
-export const ProviderSchema = z.enum(['aws', 'gcp', 'openai']);
+export const ProviderSchema = z.enum(['aws', 'openai']);
 
 export const DateRangeSchema = z.object({
   start: z.date(),

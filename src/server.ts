@@ -17,7 +17,6 @@ import { getCostTrendsTool } from './tools/getCostTrends';
 import { getCostBreakdownTool } from './tools/getCostBreakdown';
 import { getCostPeriodsTool } from './tools/getCostPeriods';
 import { AWSCostClient } from './providers/aws';
-import { GCPCostClient } from './providers/gcp';
 import { OpenAICostClient } from './providers/openai';
 
 export class CostManagementMCPServer {
@@ -68,9 +67,6 @@ export class CostManagementMCPServer {
     switch (providerName) {
       case 'aws':
         return new AWSCostClient(providerConfig.credentials as any);
-
-      case 'gcp':
-        return new GCPCostClient(providerConfig.credentials as any);
 
       case 'openai':
         return new OpenAICostClient(providerConfig.credentials as any);
@@ -158,7 +154,7 @@ export class CostManagementMCPServer {
           properties: {
             provider: {
               type: 'string',
-              enum: ['aws', 'gcp', 'openai'],
+              enum: ['aws', 'openai'],
               description: 'The provider to get costs for (optional, defaults to all)',
             },
             startDate: {
@@ -200,7 +196,7 @@ export class CostManagementMCPServer {
           properties: {
             provider: {
               type: 'string',
-              enum: ['aws', 'gcp', 'openai'],
+              enum: ['aws', 'openai'],
               description: 'The provider to check balance for',
             },
           },
@@ -307,7 +303,7 @@ export class CostManagementMCPServer {
           properties: {
             provider: {
               type: 'string',
-              enum: ['aws', 'gcp', 'openai'],
+              enum: ['aws', 'openai'],
               description: 'Specific provider to analyze (optional)',
             },
             period: {
@@ -333,7 +329,7 @@ export class CostManagementMCPServer {
           properties: {
             provider: {
               type: 'string',
-              enum: ['aws', 'gcp', 'openai'],
+              enum: ['aws', 'openai'],
               description: 'Specific provider to analyze (optional)',
             },
             startDate: {
@@ -374,7 +370,7 @@ export class CostManagementMCPServer {
           properties: {
             provider: {
               type: 'string',
-              enum: ['aws', 'gcp', 'openai'],
+              enum: ['aws', 'openai'],
               description: 'Specific provider to analyze (optional)',
             },
             period1: {

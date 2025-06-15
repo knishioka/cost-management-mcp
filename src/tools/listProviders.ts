@@ -25,7 +25,7 @@ export async function listProvidersTool(
     }
   }
 
-  const allProviders = ['aws', 'gcp', 'openai'];
+  const allProviders = ['aws', 'openai'];
   for (const name of allProviders) {
     if (!providers.has(name)) {
       providerList.push({

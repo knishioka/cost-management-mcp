@@ -28,7 +28,7 @@ Once integrated with Claude Desktop, you can ask:
 
 ## Features
 
-- 🔍 Unified cost tracking across AWS, GCP, and OpenAI
+- 🔍 Unified cost tracking across AWS and OpenAI
 - 💾 Intelligent caching to minimize API costs
 - 📊 Flexible date ranges and granularity options
 - 🔐 Secure credential management via environment variables
@@ -48,7 +48,7 @@ This server provides three powerful tools for cost management:
 **Get detailed cost breakdowns**
 
 - Check costs for any date range
-- Filter by specific provider (AWS, GCP, OpenAI)
+- Filter by specific provider (AWS, OpenAI)
 - View daily, monthly, or total costs
 - See service-level breakdowns
 
@@ -295,8 +295,6 @@ Create a `.mcp.json` file in your project root:
         "AWS_SECRET_ACCESS_KEY": "your-aws-secret-key",
         "AWS_REGION": "us-east-1",
         "OPENAI_API_KEY": "sk-...your-openai-key",
-        "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/gcp-service-account.json",
-        "GCP_BILLING_ACCOUNT_ID": "your-billing-account-id",
         "CACHE_TTL": "3600",
         "LOG_LEVEL": "info"
       }
@@ -325,8 +323,6 @@ This configuration will be automatically loaded when you open the project in Cla
         "AWS_SECRET_ACCESS_KEY": "your-aws-secret-key",
         "AWS_REGION": "us-east-1",
         "OPENAI_API_KEY": "sk-...your-openai-key",
-        "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/gcp-service-account.json",
-        "GCP_BILLING_ACCOUNT_ID": "your-billing-account-id",
         "CACHE_TTL": "3600",
         "LOG_LEVEL": "info"
       }
@@ -443,15 +439,9 @@ List all configured providers and their connection status.
         "name": "openai",
         "status": "active",
         "configured": true
-      },
-      {
-        "name": "gcp",
-        "status": "not_configured",
-        "configured": false
-      }
     ],
     "configured": 2,
-    "total": 4
+    "total": 3
   }
 }
 ```
@@ -495,41 +485,6 @@ _Note: Currently not implemented for most providers_
 
 ⚠️ **Important**: AWS charges $0.01 per Cost Explorer API request. Caching is enabled by default (1 hour) to minimize costs.
 
-### Google Cloud Platform
-
-1. **Enable Cloud Billing API**:
-
-   ```bash
-   gcloud services enable cloudbilling.googleapis.com
-   ```
-
-2. **Create Service Account**:
-
-   ```bash
-   gcloud iam service-accounts create cost-management-mcp \
-     --display-name="Cost Management MCP"
-   ```
-
-3. **Grant permissions**:
-
-   ```bash
-   gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
-     --member="serviceAccount:cost-management-mcp@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
-     --role="roles/billing.viewer"
-   ```
-
-4. **Download key and set environment variables**:
-
-   ```bash
-   gcloud iam service-accounts keys create key.json \
-     --iam-account=cost-management-mcp@YOUR_PROJECT_ID.iam.gserviceaccount.com
-
-   export GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json
-   export GCP_BILLING_ACCOUNT_ID=your-billing-account-id
-   ```
-
-⚠️ **Note**: Full GCP cost retrieval requires BigQuery export setup. The current implementation provides basic billing account access.
-
 ### OpenAI
 
 1. **Get API Key** from [OpenAI Dashboard](https://platform.openai.com/api-keys)
@@ -550,19 +505,17 @@ _Note: Currently not implemented for most providers_
 
 ### Environment Variables
 
-| Variable                         | Description                           | Default   | Required       |
-| -------------------------------- | ------------------------------------- | --------- | -------------- |
-| `AWS_ACCESS_KEY_ID`              | AWS access key                        | -         | For AWS        |
-| `AWS_SECRET_ACCESS_KEY`          | AWS secret key                        | -         | For AWS        |
-| `AWS_REGION`                     | AWS region                            | us-east-1 | For AWS        |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Path to GCP service account JSON      | -         | For GCP        |
-| `GCP_BILLING_ACCOUNT_ID`         | GCP billing account ID                | -         | For GCP        |
-| `OPENAI_API_KEY`                 | OpenAI API key                        | -         | For OpenAI     |
-| `CACHE_TTL`                      | Cache time-to-live in seconds         | 3600      | No             |
-| `CACHE_TYPE`                     | Cache backend (memory/redis)          | memory    | No             |
-| `REDIS_URL`                      | Redis connection URL                  | -         | If using Redis |
-| `LOG_LEVEL`                      | Log verbosity (debug/info/warn/error) | info      | No             |
-| `MCP_SERVER_PORT`                | Server port                           | 3000      | No             |
+| Variable                | Description                           | Default   | Required       |
+| ----------------------- | ------------------------------------- | --------- | -------------- |
+| `AWS_ACCESS_KEY_ID`     | AWS access key                        | -         | For AWS        |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key                        | -         | For AWS        |
+| `AWS_REGION`            | AWS region                            | us-east-1 | For AWS        |
+| `OPENAI_API_KEY`        | OpenAI API key                        | -         | For OpenAI     |
+| `CACHE_TTL`             | Cache time-to-live in seconds         | 3600      | No             |
+| `CACHE_TYPE`            | Cache backend (memory/redis)          | memory    | No             |
+| `REDIS_URL`             | Redis connection URL                  | -         | If using Redis |
+| `LOG_LEVEL`             | Log verbosity (debug/info/warn/error) | info      | No             |
+| `MCP_SERVER_PORT`       | Server port                           | 3000      | No             |
 
 ### Cache Configuration
 
@@ -608,7 +561,6 @@ cost-management-mcp/
 │   │   └── utils.ts     # Helper functions
 │   ├── providers/       # Provider implementations
 │   │   ├── aws/         # AWS Cost Explorer
-│   │   ├── gcp/         # Google Cloud Billing
 │   │   ├── openai/      # OpenAI Usage API
 │   ├── tools/           # MCP tool implementations
 │   │   ├── getCosts.ts
@@ -739,7 +691,6 @@ The system implements a hierarchical error handling strategy:
 #### No cost data returned
 
 - AWS: Wait 24 hours after enabling Cost Explorer
-- GCP: Ensure billing export is configured
 - OpenAI: Verify you have a paid account with usage
 
 #### High AWS costs
@@ -830,7 +781,7 @@ Cost Management MCPは、複数のクラウドプロバイダーとAPIサービ�
 
 ### 主な機能
 
-- 🔍 AWS、GCP、OpenAIのコストを一元管理
+- 🔍 AWS、OpenAIのコストを一元管理
 - 💾 APIコストを最小限に抑えるインテリジェントキャッシング
 - 📊 柔軟な日付範囲と集計オプション
 - 🔐 環境変数による安全な認証情報管理
@@ -850,7 +801,7 @@ Cost Management MCPは、複数のクラウドプロバイダーとAPIサービ�
 **詳細なコスト内訳を取得**
 
 - 任意の期間のコストをチェック
-- 特定のプロバイダー（AWS、GCP、OpenAI）でフィルタリング
+- 特定のプロバイダー（AWS、OpenAI）でフィルタリング
 - 日次、月次、または合計コストを表示
 - サービスレベルの内訳を確認
 
@@ -938,8 +889,6 @@ Claude Codeは2つの設定方法でMCPサーバーをサポートしていま�
         "AWS_SECRET_ACCESS_KEY": "your-aws-secret-key",
         "AWS_REGION": "us-east-1",
         "OPENAI_API_KEY": "sk-...your-openai-key",
-        "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/gcp-service-account.json",
-        "GCP_BILLING_ACCOUNT_ID": "your-billing-account-id",
         "CACHE_TTL": "3600",
         "LOG_LEVEL": "info"
       }

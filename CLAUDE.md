@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a Model Context Protocol (MCP) server that provides unified cost monitoring across multiple cloud and API providers (AWS, GCP, OpenAI). The server allows users to retrieve cost data, monitor usage, and track expenses across different services through a consistent interface.
+This is a Model Context Protocol (MCP) server that provides unified cost monitoring across multiple cloud and API providers (AWS, OpenAI). The server allows users to retrieve cost data, monitor usage, and track expenses across different services through a consistent interface.
 
 ## Key Commands
 
@@ -39,7 +39,7 @@ git commit --no-verify -m "your message"
 
 ### Provider Structure
 
-Each provider (AWS, GCP, OpenAI) has:
+Each provider (AWS, OpenAI) has:
 
 - `client.ts` - API client implementation
 - `types.ts` - TypeScript type definitions
@@ -49,7 +49,7 @@ Each provider (AWS, GCP, OpenAI) has:
 
 ```typescript
 interface UnifiedCostData {
-  provider: 'aws' | 'gcp' | 'openai';
+  provider: 'aws' | 'openai';
   period: { start: Date; end: Date };
   costs: {
     total: number;
@@ -217,13 +217,6 @@ When adding new tools:
 - API calls cost $0.01 each - implement aggressive caching
 - Authentication via IAM credentials
 
-### Google Cloud
-
-- Uses official @google-cloud/billing library
-- Supports Application Default Credentials (ADC)
-- Free API calls but has rate limits
-- Requires billing.accounts.get permission
-
 ### OpenAI
 
 - New Usage API (December 2024)
@@ -240,10 +233,6 @@ When adding new tools:
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 AWS_REGION=us-east-1
-
-# GCP
-GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json
-GCP_BILLING_ACCOUNT_ID=
 
 # OpenAI
 OPENAI_API_KEY=

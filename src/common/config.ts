@@ -11,10 +11,6 @@ const EnvSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
   AWS_REGION: z.string().default('us-east-1'),
 
-  // GCP
-  GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
-  GCP_BILLING_ACCOUNT_ID: z.string().optional(),
-
   // OpenAI
   OPENAI_API_KEY: z.string().optional(),
 
@@ -50,15 +46,6 @@ export class Config {
             accessKeyId: this.env.AWS_ACCESS_KEY_ID || '',
             secretAccessKey: this.env.AWS_SECRET_ACCESS_KEY || '',
             region: this.env.AWS_REGION,
-          },
-        };
-
-      case 'gcp':
-        return {
-          enabled: !!(this.env.GOOGLE_APPLICATION_CREDENTIALS && this.env.GCP_BILLING_ACCOUNT_ID),
-          credentials: {
-            keyFilename: this.env.GOOGLE_APPLICATION_CREDENTIALS || '',
-            billingAccountId: this.env.GCP_BILLING_ACCOUNT_ID || '',
           },
         };
 
@@ -98,7 +85,7 @@ export class Config {
   }
 
   getEnabledProviders(): string[] {
-    const providers = ['aws', 'gcp', 'openai'];
+    const providers = ['aws', 'openai'];
     return providers.filter((provider) => {
       const config = this.getProviderConfig(provider);
       return config.enabled;
