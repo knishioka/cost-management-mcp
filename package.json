@@ -41,7 +41,7 @@
   },
   "type": "commonjs",
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@modelcontextprotocol/sdk": "^1.13.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^24.0.1",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
