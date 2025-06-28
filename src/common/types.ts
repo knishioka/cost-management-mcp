@@ -4,26 +4,10 @@ export type Provider = 'aws' | 'openai';
 
 export const ProviderSchema = z.enum(['aws', 'openai']);
 
-export const DateRangeSchema = z.object({
-  start: z.date(),
-  end: z.date(),
-});
-
 export interface DateRange {
   start: Date;
   end: Date;
 }
-
-export const CostBreakdownSchema = z.object({
-  service: z.string(),
-  amount: z.number(),
-  usage: z.optional(
-    z.object({
-      quantity: z.number(),
-      unit: z.string(),
-    }),
-  ),
-});
 
 export interface CostBreakdown {
   service: string;
@@ -33,20 +17,6 @@ export interface CostBreakdown {
     unit: string;
   };
 }
-
-export const UnifiedCostDataSchema = z.object({
-  provider: ProviderSchema,
-  period: DateRangeSchema,
-  costs: z.object({
-    total: z.number(),
-    currency: z.string(),
-    breakdown: z.array(CostBreakdownSchema),
-  }),
-  metadata: z.object({
-    lastUpdated: z.date(),
-    source: z.enum(['api', 'cache', 'manual']),
-  }),
-});
 
 export interface UnifiedCostData {
   provider: Provider;
@@ -61,14 +31,6 @@ export interface UnifiedCostData {
     source: 'api' | 'cache' | 'manual';
   };
 }
-
-export const CostQueryParamsSchema = z.object({
-  provider: ProviderSchema.optional(),
-  startDate: z.date(),
-  endDate: z.date(),
-  granularity: z.enum(['daily', 'monthly', 'total']).optional().default('total'),
-  groupBy: z.array(z.string()).optional(),
-});
 
 export interface CostQueryParams {
   provider?: Provider;
@@ -89,18 +51,6 @@ export interface ProviderClient {
   validateCredentials(): Promise<boolean>;
   getProviderName(): Provider;
 }
-
-export const ToolResponseSchema = z.object({
-  success: z.boolean(),
-  data: z.any().optional(),
-  error: z
-    .object({
-      code: z.string(),
-      message: z.string(),
-      details: z.any().optional(),
-    })
-    .optional(),
-});
 
 export interface ToolResponse<T = any> {
   success: boolean;

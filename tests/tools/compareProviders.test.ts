@@ -5,7 +5,6 @@ describe('compareProvidersTool', () => {
   let mockProviders: Map<string, ProviderClient>;
   let mockAWSProvider: jest.Mocked<ProviderClient>;
   let mockOpenAIProvider: jest.Mocked<ProviderClient>;
-  let mockGCPProvider: jest.Mocked<ProviderClient>;
 
   beforeEach(() => {
     mockAWSProvider = {
@@ -18,15 +17,9 @@ describe('compareProvidersTool', () => {
       isAvailable: jest.fn().mockReturnValue(true),
     } as unknown as jest.Mocked<ProviderClient>;
 
-    mockGCPProvider = {
-      getCosts: jest.fn(),
-      isAvailable: jest.fn().mockReturnValue(true),
-    } as unknown as jest.Mocked<ProviderClient>;
-
     mockProviders = new Map([
       ['aws', mockAWSProvider],
       ['openai', mockOpenAIProvider],
-      ['gcp', mockGCPProvider],
     ]);
   });
 
@@ -65,23 +58,6 @@ describe('compareProvidersTool', () => {
       },
     });
 
-    mockGCPProvider.getCosts.mockResolvedValue({
-      provider: 'gcp' as const,
-      period: {
-        start: new Date('2024-01-01'),
-        end: new Date('2024-01-31'),
-      },
-      costs: {
-        total: 200.0,
-        currency: 'USD',
-        breakdown: [],
-      },
-      metadata: {
-        lastUpdated: new Date(),
-        source: 'api' as const,
-      },
-    });
-
     const result = await compareProvidersTool(
       {
         startDate: '2024-01-01',
@@ -93,10 +69,10 @@ describe('compareProvidersTool', () => {
 
     const response = JSON.parse(result.content[0].text);
     expect(response.success).toBe(true);
-    expect(response.data.summary.totalCost).toBe(2000.0);
-    expect(response.data.summary.providersAnalyzed).toBe(3);
-    expect(response.data.summary.successfulQueries).toBe(3);
-    expect(response.data.providers).toHaveLength(3);
+    expect(response.data.summary.totalCost).toBe(1800.0);
+    expect(response.data.summary.providersAnalyzed).toBe(2);
+    expect(response.data.summary.successfulQueries).toBe(2);
+    expect(response.data.providers).toHaveLength(2);
     expect(response.data.insights).toContain('AWS is your highest cost provider at $1500.00');
   });
 
@@ -182,7 +158,7 @@ describe('compareProvidersTool', () => {
     const response = JSON.parse(result.content[0].text);
     expect(response.success).toBe(true);
     expect(response.data.summary.successfulQueries).toBe(1);
-    expect(response.data.providers).toHaveLength(3);
+    expect(response.data.providers).toHaveLength(2);
 
     const openaiProvider = response.data.providers.find((p: any) => p.provider === 'openai');
     expect(openaiProvider.status).toBe('error');
