@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-export type Provider = 'aws' | 'openai';
+export type Provider = 'aws' | 'openai' | 'anthropic';
 
-export const ProviderSchema = z.enum(['aws', 'openai']);
+export const ProviderSchema = z.enum(['aws', 'openai', 'anthropic']);
 
 export interface DateRange {
   start: Date;

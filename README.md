@@ -19,6 +19,7 @@ Once integrated with Claude Desktop, you can ask:
 ```
 📊 "What are my AWS costs for December 2024?"
 📈 "Show me OpenAI API usage trends for the last 30 days"
+🤖 "What are my Anthropic API costs this month?"
 🔍 "Break down my cloud expenses by service"
 📋 "Which providers are currently configured?"
 💰 "How much have I spent across all services this month?"
@@ -28,7 +29,7 @@ Once integrated with Claude Desktop, you can ask:
 
 ## Features
 
-- 🔍 Unified cost tracking across AWS and OpenAI
+- 🔍 Unified cost tracking across AWS, OpenAI, and Anthropic
 - 💾 Intelligent caching to minimize API costs
 - 📊 Flexible date ranges and granularity options
 - 🔐 Secure credential management via environment variables
@@ -48,7 +49,7 @@ This server provides three powerful tools for cost management:
 **Get detailed cost breakdowns**
 
 - Check costs for any date range
-- Filter by specific provider (AWS, OpenAI)
+- Filter by specific provider (AWS, OpenAI, Anthropic)
 - View daily, monthly, or total costs
 - See service-level breakdowns
 
@@ -91,6 +92,21 @@ Example usage:
 
 - "Show my OpenAI costs grouped by model"
 - "How many tokens did I use with GPT-4 this week?"
+
+### 🤖 `anthropic_costs`
+
+**Get detailed Anthropic usage**
+
+- Model-by-model breakdown (Claude 3.5 Sonnet, Haiku, etc.)
+- Token usage statistics with prompt caching details
+- Cost optimization recommendations
+- Support for both cost report and usage report APIs
+
+Example usage:
+
+- "Show my Anthropic costs grouped by model"
+- "How much did I spend on Claude 3.5 Sonnet this month?"
+- "What are my Anthropic costs with token-level details?"
 
 ### ☁️ `aws_costs`
 
@@ -179,6 +195,7 @@ Example usage:
   - [provider_list](#-provider_list)
   - [provider_balance](#-provider_balance)
   - [openai_costs](#-openai_costs)
+  - [anthropic_costs](#-anthropic_costs)
   - [aws_costs](#️-aws_costs)
   - [provider_compare](#-provider_compare)
 - [Provider Setup](#provider-setup)
@@ -295,6 +312,7 @@ Create a `.mcp.json` file in your project root:
         "AWS_SECRET_ACCESS_KEY": "your-aws-secret-key",
         "AWS_REGION": "us-east-1",
         "OPENAI_API_KEY": "sk-...your-openai-key",
+        "ANTHROPIC_API_KEY": "sk-ant-admin-...your-admin-key",
         "CACHE_TTL": "3600",
         "LOG_LEVEL": "info"
       }
@@ -323,6 +341,7 @@ This configuration will be automatically loaded when you open the project in Cla
         "AWS_SECRET_ACCESS_KEY": "your-aws-secret-key",
         "AWS_REGION": "us-east-1",
         "OPENAI_API_KEY": "sk-...your-openai-key",
+        "ANTHROPIC_API_KEY": "sk-ant-admin-...your-admin-key",
         "CACHE_TTL": "3600",
         "LOG_LEVEL": "info"
       }
@@ -358,7 +377,7 @@ Retrieve cost data for specified providers and time periods.
 
 **Parameters:**
 
-- `provider` (optional): Specific provider to query ('aws', 'gcp', 'openai')
+- `provider` (optional): Specific provider to query ('aws', 'openai', 'anthropic')
 - `startDate` (required): Start date in YYYY-MM-DD format
 - `endDate` (required): End date in YYYY-MM-DD format
 - `granularity` (optional): 'daily', 'monthly', or 'total' (default: 'total')
@@ -456,7 +475,6 @@ _Note: Currently not implemented for most providers_
 ### AWS
 
 1. **Enable Cost Explorer** in AWS Console
-
    - Navigate to AWS Cost Management → Cost Explorer
    - Click "Enable Cost Explorer" (⚠️ This action is irreversible)
    - Wait 24 hours for data to be available
@@ -490,7 +508,6 @@ _Note: Currently not implemented for most providers_
 1. **Get API Key** from [OpenAI Dashboard](https://platform.openai.com/api-keys)
 
 2. **Ensure you have**:
-
    - A paid account with usage history
    - API access enabled
 
@@ -500,6 +517,29 @@ _Note: Currently not implemented for most providers_
    ```
 
 ⚠️ **Note**: The Usage API is relatively new (December 2024). Ensure your account has access.
+
+### Anthropic
+
+1. **Get Admin API Key** from [Anthropic Console](https://console.anthropic.com/)
+
+2. **Requirements**:
+   - Organization account (individual accounts are not supported)
+   - Admin role to provision Admin API keys
+   - Admin API key starts with `sk-ant-admin...` (different from regular API keys)
+
+3. **Set environment variable**:
+   ```bash
+   ANTHROPIC_API_KEY=sk-ant-admin-...your-admin-api-key
+   ```
+
+⚠️ **Important Notes**:
+
+- Only Admin API keys can access cost and usage data
+- Cost data is available through two APIs:
+  - **Cost Report API**: Provides actual billing data in USD
+  - **Usage Report API**: Provides token-level details with calculated costs
+- Data typically appears within 5 minutes of API request completion
+- Supports prompt caching cost tracking
 
 ## Configuration
 
@@ -511,6 +551,7 @@ _Note: Currently not implemented for most providers_
 | `AWS_SECRET_ACCESS_KEY` | AWS secret key                        | -         | For AWS        |
 | `AWS_REGION`            | AWS region                            | us-east-1 | For AWS        |
 | `OPENAI_API_KEY`        | OpenAI API key                        | -         | For OpenAI     |
+| `ANTHROPIC_API_KEY`     | Anthropic Admin API key               | -         | For Anthropic  |
 | `CACHE_TTL`             | Cache time-to-live in seconds         | 3600      | No             |
 | `CACHE_TYPE`            | Cache backend (memory/redis)          | memory    | No             |
 | `REDIS_URL`             | Redis connection URL                  | -         | If using Redis |
@@ -562,6 +603,7 @@ cost-management-mcp/
 │   ├── providers/       # Provider implementations
 │   │   ├── aws/         # AWS Cost Explorer
 │   │   ├── openai/      # OpenAI Usage API
+│   │   ├── anthropic/   # Anthropic Admin API
 │   ├── tools/           # MCP tool implementations
 │   │   ├── getCosts.ts
 │   │   ├── listProviders.ts
@@ -781,7 +823,7 @@ Cost Management MCPは、複数のクラウドプロバイダーとAPIサービ�
 
 ### 主な機能
 
-- 🔍 AWS、OpenAIのコストを一元管理
+- 🔍 AWS、OpenAI、Anthropicのコストを一元管理
 - 💾 APIコストを最小限に抑えるインテリジェントキャッシング
 - 📊 柔軟な日付範囲と集計オプション
 - 🔐 環境変数による安全な認証情報管理
@@ -889,6 +931,7 @@ Claude Codeは2つの設定方法でMCPサーバーをサポートしていま�
         "AWS_SECRET_ACCESS_KEY": "your-aws-secret-key",
         "AWS_REGION": "us-east-1",
         "OPENAI_API_KEY": "sk-...your-openai-key",
+        "ANTHROPIC_API_KEY": "sk-ant-admin-...your-admin-key",
         "CACHE_TTL": "3600",
         "LOG_LEVEL": "info"
       }
