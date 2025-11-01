@@ -9,6 +9,12 @@ export interface DateRange {
   end: Date;
 }
 
+export interface CostBreakdownMetadata {
+  region?: string;
+  tags?: Record<string, string>;
+  [key: string]: unknown;
+}
+
 export interface CostBreakdown {
   service: string;
   amount: number;
@@ -16,6 +22,8 @@ export interface CostBreakdown {
     quantity: number;
     unit: string;
   };
+  date?: Date;
+  metadata?: CostBreakdownMetadata;
 }
 
 export interface UnifiedCostData {
@@ -52,13 +60,13 @@ export interface ProviderClient {
   getProviderName(): Provider;
 }
 
-export interface ToolResponse<T = any> {
+export interface ToolResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: {
     code: string;
     message: string;
-    details?: any;
+    details?: unknown;
   };
 }
 

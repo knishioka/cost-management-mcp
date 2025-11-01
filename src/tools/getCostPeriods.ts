@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { ProviderClient, UnifiedCostData } from '../common/types';
-import { parseDate, logger } from '../common/utils';
+import { parseDate, logger, resolveProviderName } from '../common/utils';
 import { ValidationError } from '../common/errors';
 
 const GetCostPeriodsSchema = z.object({
@@ -69,12 +69,14 @@ export async function getCostPeriodsTool(
       throw new ValidationError(`Provider ${params.provider} not configured`);
     }
 
+    const providerName = resolveProviderName(provider);
     const comparison = await comparePeriods(
       provider,
       { start: period1Start, end: period1End },
       { start: period2Start, end: period2End },
       params.comparisonType,
       params.breakdown,
+      providerName,
     );
 
     return {
@@ -100,14 +102,16 @@ export async function getCostPeriodsTool(
 
   for (const [name, provider] of providers) {
     try {
+      const providerName = resolveProviderName(provider);
       const comparison = await comparePeriods(
         provider,
         { start: period1Start, end: period1End },
         { start: period2Start, end: period2End },
         params.comparisonType,
         params.breakdown,
+        providerName,
       );
-      allComparisons.push({ provider: name, comparison });
+      allComparisons.push({ provider: providerName, comparison });
     } catch (error) {
       logger.error(`Failed to compare periods for ${name}`, error);
     }
@@ -141,6 +145,7 @@ async function comparePeriods(
   period2: { start: Date; end: Date },
   _comparisonType: string,
   includeBreakdown: boolean,
+  providerName: string,
 ): Promise<PeriodComparison> {
   // Fetch costs for both periods
   const [costs1, costs2] = await Promise.all([
@@ -199,7 +204,7 @@ async function comparePeriods(
     absoluteDiff,
     percentageChange,
     breakdown,
-    (provider as any).name || 'unknown',
+    providerName,
   );
 
   return {

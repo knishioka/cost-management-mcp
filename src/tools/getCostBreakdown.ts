@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import type { ProviderClient, UnifiedCostData } from '../common/types';
-import { parseDate, logger } from '../common/utils';
+import type { CostBreakdown, ProviderClient, UnifiedCostData } from '../common/types';
+import { parseDate, logger, resolveProviderName } from '../common/utils';
 import { ValidationError } from '../common/errors';
 
 const GetCostBreakdownSchema = z.object({
@@ -142,17 +142,14 @@ async function analyzeBreakdown(
   });
 
   const breakdown = calculateBreakdown(costData, dimensions, topN, threshold);
-  const insights = generateBreakdownInsights(
-    breakdown,
-    costData,
-    (provider as any).name || 'unknown',
-  );
+  const providerName = resolveProviderName(provider);
+  const insights = generateBreakdownInsights(breakdown, costData, providerName);
 
   const includedCost = breakdown.reduce((sum, item) => sum + item.value, 0);
   const coveragePercentage = (includedCost / costData.costs.total) * 100;
 
   return {
-    provider: (provider as any).name || 'unknown',
+    provider: providerName,
     period: { start: startDate, end: endDate },
     totalCost: costData.costs.total,
     currency: costData.costs.currency,
@@ -184,13 +181,13 @@ function calculateBreakdown(
         key = item.service || 'Unknown Service';
         break;
       case 'region':
-        key = (item as any).metadata?.region || 'Global';
+        key = item.metadata?.region || 'Global';
         break;
       case 'date':
-        key = (item as any).date?.toISOString().split('T')[0] || 'Unknown Date';
+        key = item.date?.toISOString().split('T')[0] || 'Unknown Date';
         break;
       case 'tag':
-        key = (item as any).metadata?.tags?.project || 'Untagged';
+        key = item.metadata?.tags?.project || 'Untagged';
         break;
       default:
         key = 'Unknown';
@@ -200,7 +197,7 @@ function calculateBreakdown(
   }
 
   // Convert to array and sort by value
-  let items = Array.from(grouped.entries())
+  let items: BreakdownItem[] = Array.from(grouped.entries())
     .map(([key, value]) => ({
       key,
       value,
@@ -222,7 +219,7 @@ function calculateBreakdown(
       // Filter cost data for this item and calculate sub-breakdown
       const filteredData = filterCostData(costData, primaryDimension, item.key);
       if (filteredData.costs.breakdown.length > 0) {
-        (item as any).subBreakdown = calculateBreakdown(
+        item.subBreakdown = calculateBreakdown(
           filteredData,
           dimensions.slice(1),
           5, // Limit sub-breakdowns to top 5
@@ -240,16 +237,16 @@ function filterCostData(
   dimension: string,
   value: string,
 ): UnifiedCostData {
-  const filtered = costData.costs.breakdown.filter((item) => {
+  const filtered = costData.costs.breakdown.filter((item: CostBreakdown) => {
     switch (dimension) {
       case 'service':
         return (item.service || 'Unknown Service') === value;
       case 'region':
-        return ((item as any).metadata?.region || 'Global') === value;
+        return (item.metadata?.region || 'Global') === value;
       case 'date':
-        return (item as any).date?.toISOString().split('T')[0] === value;
+        return item.date?.toISOString().split('T')[0] === value;
       case 'tag':
-        return ((item as any).metadata?.tags?.project || 'Untagged') === value;
+        return (item.metadata?.tags?.project || 'Untagged') === value;
       default:
         return false;
     }

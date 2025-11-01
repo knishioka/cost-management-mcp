@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { ProviderClient, UnifiedCostData } from '../common/types';
-import { logger } from '../common/utils';
+import { logger, resolveProviderName } from '../common/utils';
 import { ValidationError } from '../common/errors';
 
 const GetCostTrendsSchema = z.object({
@@ -132,10 +132,11 @@ async function analyzeTrends(
 
   const trends = calculateTrends(costData, granularity);
   const summary = calculateSummary(trends, costData);
-  const insights = generateInsights(trends, summary, (provider as any).name || 'unknown');
+  const providerName = resolveProviderName(provider);
+  const insights = generateInsights(trends, summary, providerName);
 
   return {
-    provider: (provider as any).name || 'unknown',
+    provider: providerName,
     period: `${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`,
     trends,
     summary,
@@ -146,12 +147,12 @@ async function analyzeTrends(
 function calculateTrends(costData: UnifiedCostData, _granularity: string): TrendData[] {
   const trends: TrendData[] = [];
   const sortedBreakdown = [...costData.costs.breakdown].sort(
-    (a, b) => ((a as any).date?.getTime() || 0) - ((b as any).date?.getTime() || 0),
+    (a, b) => (a.date?.getTime() ?? 0) - (b.date?.getTime() ?? 0),
   );
 
   let previousCost = 0;
   for (const item of sortedBreakdown) {
-    const itemDate = (item as any).date;
+    const itemDate = item.date;
     if (!itemDate) continue;
 
     const changeFromPrevious = item.amount - previousCost;
@@ -235,7 +236,7 @@ function generateInsights(
   const insights: string[] = [];
 
   // Trend insights
-  if (summary.trend === 'increasing') {
+  if (summary.trend === 'increasing' && trends.length > 0) {
     const lastTrend = trends[trends.length - 1];
     insights.push(
       `📈 ${provider} costs are trending upward, latest: $${lastTrend.cost.toFixed(2)}`,

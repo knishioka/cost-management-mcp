@@ -8,6 +8,28 @@ export interface Cache {
   delete(key: string): Promise<void>;
   clear(): Promise<void>;
   has(key: string): Promise<boolean>;
+  keys(): Promise<string[]>;
+}
+
+type CacheKeyPrimitive = string | number | boolean | Date | null | undefined;
+type CacheKeyValue = CacheKeyPrimitive | CacheKeyPrimitive[];
+
+export type CacheKeyParams = Record<string, CacheKeyValue>;
+
+function serializeCacheValue(value: CacheKeyValue): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => serializeCacheValue(item)).join(',');
+  }
+
+  return String(value);
 }
 
 export class MemoryCache implements Cache {
@@ -62,6 +84,14 @@ export class MemoryCache implements Cache {
       throw new CacheError(`Failed to check cache key: ${key}`, { error });
     }
   }
+
+  async keys(): Promise<string[]> {
+    try {
+      return this.cache.keys();
+    } catch (error) {
+      throw new CacheError('Failed to list cache keys', { error });
+    }
+  }
 }
 
 export class CacheManager {
@@ -76,22 +106,22 @@ export class CacheManager {
     }
   }
 
-  private buildKey(provider: string, params: Record<string, any>): string {
-    const sortedParams = Object.keys(params)
-      .sort()
-      .map((key) => `${key}:${params[key]}`)
+  private buildKey(provider: string, params: CacheKeyParams): string {
+    const sortedParams = Object.entries(params)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}:${serializeCacheValue(value)}`)
       .join(':');
     return `${this.keyPrefix}:${provider}:${sortedParams}`;
   }
 
-  async getCostData<T>(provider: string, params: Record<string, any>): Promise<T | undefined> {
+  async getCostData<T>(provider: string, params: CacheKeyParams): Promise<T | undefined> {
     const key = this.buildKey(provider, params);
     return this.cache.get<T>(key);
   }
 
   async setCostData<T>(
     provider: string,
-    params: Record<string, any>,
+    params: CacheKeyParams,
     data: T,
     ttl?: number,
   ): Promise<void> {
@@ -101,12 +131,10 @@ export class CacheManager {
 
   async invalidateProvider(provider: string): Promise<void> {
     const prefix = `${this.keyPrefix}:${provider}:`;
-    if (this.cache instanceof MemoryCache) {
-      const keys = (this.cache as any).cache.keys();
-      for (const key of keys) {
-        if (key.startsWith(prefix)) {
-          await this.cache.delete(key);
-        }
+    const keys = await this.cache.keys();
+    for (const key of keys) {
+      if (key.startsWith(prefix)) {
+        await this.cache.delete(key);
       }
     }
   }
@@ -156,16 +184,20 @@ export class NoOpCache implements Cache {
   async has(_key: string): Promise<boolean> {
     return false;
   }
+
+  async keys(): Promise<string[]> {
+    return [];
+  }
 }
 
 export class NoOpCacheManager {
-  async getCostData<T>(_provider: string, _params: Record<string, any>): Promise<T | undefined> {
+  async getCostData<T>(_provider: string, _params: CacheKeyParams): Promise<T | undefined> {
     return undefined;
   }
 
   async setCostData<T>(
     _provider: string,
-    _params: Record<string, any>,
+    _params: CacheKeyParams,
     _data: T,
     _ttl?: number,
   ): Promise<void> {
