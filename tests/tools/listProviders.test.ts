@@ -5,6 +5,7 @@ describe('listProvidersTool', () => {
   let mockProviders: Map<string, ProviderClient>;
   let mockAWSClient: jest.Mocked<ProviderClient>;
   let mockOpenAIClient: jest.Mocked<ProviderClient>;
+  let mockAnthropicClient: jest.Mocked<ProviderClient>;
 
   beforeEach(() => {
     mockAWSClient = {
@@ -19,23 +20,31 @@ describe('listProvidersTool', () => {
       getProviderName: jest.fn().mockReturnValue('openai'),
     };
 
+    mockAnthropicClient = {
+      getCosts: jest.fn(),
+      validateCredentials: jest.fn(),
+      getProviderName: jest.fn().mockReturnValue('anthropic'),
+    };
+
     mockProviders = new Map([
       ['aws', mockAWSClient],
       ['openai', mockOpenAIClient],
+      ['anthropic', mockAnthropicClient],
     ]);
   });
 
   it('should list all providers with their status', async () => {
     mockAWSClient.validateCredentials.mockResolvedValue(true);
     mockOpenAIClient.validateCredentials.mockResolvedValue(false);
+    mockAnthropicClient.validateCredentials.mockResolvedValue(true);
 
     const result = await listProvidersTool(mockProviders);
 
     const response = JSON.parse(result.content[0].text);
     expect(response.success).toBe(true);
-    expect(response.data.providers).toHaveLength(2); // 2 configured
-    expect(response.data.configured).toBe(2);
-    expect(response.data.total).toBe(2);
+    expect(response.data.providers).toHaveLength(3); // 3 configured
+    expect(response.data.configured).toBe(3);
+    expect(response.data.total).toBe(3);
 
     const aws = response.data.providers.find((p: any) => p.name === 'aws');
     expect(aws).toEqual({
@@ -48,6 +57,13 @@ describe('listProvidersTool', () => {
     expect(openai).toEqual({
       name: 'openai',
       status: 'invalid_credentials',
+      configured: true,
+    });
+
+    const anthropic = response.data.providers.find((p: any) => p.name === 'anthropic');
+    expect(anthropic).toEqual({
+      name: 'anthropic',
+      status: 'active',
       configured: true,
     });
   });
@@ -78,7 +94,7 @@ describe('listProvidersTool', () => {
     const response = JSON.parse(result.content[0].text);
     expect(response.success).toBe(true);
     expect(response.data.configured).toBe(0);
-    expect(response.data.total).toBe(2);
+    expect(response.data.total).toBe(3);
     expect(response.data.providers.every((p: any) => p.status === 'not_configured')).toBe(true);
   });
 });

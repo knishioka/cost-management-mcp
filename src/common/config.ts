@@ -2,6 +2,7 @@ import { config as dotenvConfig } from 'dotenv';
 import { z } from 'zod';
 import { ConfigurationError } from './errors';
 import type { CacheConfig, LogConfig, ProviderConfig } from './types';
+import { SUPPORTED_PROVIDERS } from './providers';
 
 dotenvConfig();
 
@@ -96,8 +97,7 @@ export class Config {
   }
 
   getEnabledProviders(): string[] {
-    const providers = ['aws', 'openai', 'anthropic'];
-    return providers.filter((provider) => {
+    return SUPPORTED_PROVIDERS.filter((provider) => {
       const config = this.getProviderConfig(provider);
       return config.enabled;
     });

@@ -7,16 +7,7 @@ import { initializeCache } from './common/cache';
 import { logger } from './common/utils';
 import { handleError } from './common/errors';
 import type { ProviderClient } from './common/types';
-import { getCostTool } from './tools/getCosts';
-import { listProvidersTool } from './tools/listProviders';
-import { checkBalanceTool } from './tools/checkBalance';
-import { getOpenAICostsTool } from './tools/getOpenAICosts';
-import { getAnthropicCostsTool } from './tools/getAnthropicCosts';
-import { getAWSCostsTool } from './tools/getAWSCosts';
-import { compareProvidersTool } from './tools/compareProviders';
-import { getCostTrendsTool } from './tools/getCostTrends';
-import { getCostBreakdownTool } from './tools/getCostBreakdown';
-import { getCostPeriodsTool } from './tools/getCostPeriods';
+import { toolDefinitions, type ToolDefinition } from './tools/registry';
 import { AWSCostClient } from './providers/aws';
 import { OpenAICostClient } from './providers/openai';
 import { AnthropicCostClient } from './providers/anthropic';
@@ -24,6 +15,7 @@ import { AnthropicCostClient } from './providers/anthropic';
 export class CostManagementMCPServer {
   private server: Server;
   private providers: Map<string, ProviderClient> = new Map();
+  private toolRegistry: Map<string, ToolDefinition>;
 
   constructor() {
     this.server = new Server(
@@ -36,6 +28,10 @@ export class CostManagementMCPServer {
           tools: {},
         },
       },
+    );
+
+    this.toolRegistry = new Map(
+      toolDefinitions.map((definition) => [definition.metadata.name, definition]),
     );
 
     this.setupHandlers();
@@ -91,40 +87,12 @@ export class CostManagementMCPServer {
       try {
         const { name, arguments: args } = request.params;
 
-        switch (name) {
-          case 'cost_get':
-            return await getCostTool(args, this.providers);
-
-          case 'provider_list':
-            return await listProvidersTool(this.providers);
-
-          case 'provider_balance':
-            return await checkBalanceTool(args, this.providers);
-
-          case 'openai_costs':
-            return await getOpenAICostsTool(args, this.providers);
-
-          case 'anthropic_costs':
-            return await getAnthropicCostsTool(args, this.providers);
-
-          case 'aws_costs':
-            return await getAWSCostsTool(args, this.providers);
-
-          case 'provider_compare':
-            return await compareProvidersTool(args, this.providers);
-
-          case 'cost_trends':
-            return await getCostTrendsTool(args, this.providers);
-
-          case 'cost_breakdown':
-            return await getCostBreakdownTool(args, this.providers);
-
-          case 'cost_periods':
-            return await getCostPeriodsTool(args, this.providers);
-
-          default:
-            throw new Error(`Unknown tool: ${name}`);
+        const definition = this.toolRegistry.get(name);
+        if (!definition) {
+          throw new Error(`Unknown tool: ${name}`);
         }
+
+        return await definition.handler(args, this.providers);
       } catch (error) {
         const handledError = handleError(error);
         logger.error('Tool execution failed', handledError);
@@ -153,299 +121,7 @@ export class CostManagementMCPServer {
   }
 
   private getTools(): Tool[] {
-    return [
-      {
-        name: 'cost_get',
-        description: 'Get cost data for a specific provider and time period',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            provider: {
-              type: 'string',
-              enum: ['aws', 'openai', 'anthropic'],
-              description: 'The provider to get costs for (optional, defaults to all)',
-            },
-            startDate: {
-              type: 'string',
-              description: 'Start date in YYYY-MM-DD format',
-            },
-            endDate: {
-              type: 'string',
-              description: 'End date in YYYY-MM-DD format',
-            },
-            granularity: {
-              type: 'string',
-              enum: ['daily', 'monthly', 'total'],
-              description: 'Cost aggregation granularity',
-              default: 'total',
-            },
-            groupBy: {
-              type: 'array',
-              items: { type: 'string' },
-              description: 'Dimensions to group costs by (e.g., SERVICE, REGION)',
-            },
-          },
-          required: ['startDate', 'endDate'],
-        },
-      },
-      {
-        name: 'provider_list',
-        description: 'List all configured providers and their status',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-        },
-      },
-      {
-        name: 'provider_balance',
-        description: 'Check remaining balance or credits for a provider',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            provider: {
-              type: 'string',
-              enum: ['aws', 'openai', 'anthropic'],
-              description: 'The provider to check balance for',
-            },
-          },
-          required: ['provider'],
-        },
-      },
-      {
-        name: 'openai_costs',
-        description: 'Get detailed OpenAI costs with model breakdown and token usage',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            startDate: {
-              type: 'string',
-              description: 'Start date in YYYY-MM-DD format',
-            },
-            endDate: {
-              type: 'string',
-              description: 'End date in YYYY-MM-DD format',
-            },
-            groupByModel: {
-              type: 'boolean',
-              description: 'Group costs by model',
-              default: false,
-            },
-            includeTokenUsage: {
-              type: 'boolean',
-              description: 'Include token usage statistics',
-              default: true,
-            },
-          },
-          required: ['startDate', 'endDate'],
-        },
-      },
-      {
-        name: 'anthropic_costs',
-        description: 'Get detailed Anthropic costs with model breakdown and token usage',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            startDate: {
-              type: 'string',
-              description: 'Start date in YYYY-MM-DD format',
-            },
-            endDate: {
-              type: 'string',
-              description: 'End date in YYYY-MM-DD format',
-            },
-            groupByModel: {
-              type: 'boolean',
-              description: 'Group costs by model',
-              default: false,
-            },
-            includeTokenUsage: {
-              type: 'boolean',
-              description: 'Include token usage statistics',
-              default: true,
-            },
-            useUsageReport: {
-              type: 'boolean',
-              description:
-                'Use usage report API instead of cost report (provides token-level details with calculated costs)',
-              default: false,
-            },
-          },
-          required: ['startDate', 'endDate'],
-        },
-      },
-      {
-        name: 'aws_costs',
-        description: 'Get detailed AWS costs with service breakdown and optimization tips',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            startDate: {
-              type: 'string',
-              description: 'Start date in YYYY-MM-DD format',
-            },
-            endDate: {
-              type: 'string',
-              description: 'End date in YYYY-MM-DD format',
-            },
-            granularity: {
-              type: 'string',
-              enum: ['daily', 'monthly', 'total'],
-              description: 'Cost aggregation granularity',
-              default: 'daily',
-            },
-            groupBy: {
-              type: 'array',
-              items: {
-                type: 'string',
-                enum: ['SERVICE', 'REGION', 'INSTANCE_TYPE', 'LINKED_ACCOUNT'],
-              },
-              description: 'Dimensions to group costs by',
-            },
-            service: {
-              type: 'string',
-              description: 'Filter by specific AWS service',
-            },
-            includeForecast: {
-              type: 'boolean',
-              description: 'Include cost forecast',
-              default: false,
-            },
-          },
-          required: ['startDate', 'endDate'],
-        },
-      },
-      {
-        name: 'provider_compare',
-        description: 'Compare costs across all configured providers',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            startDate: {
-              type: 'string',
-              description: 'Start date in YYYY-MM-DD format',
-            },
-            endDate: {
-              type: 'string',
-              description: 'End date in YYYY-MM-DD format',
-            },
-            includeChart: {
-              type: 'boolean',
-              description: 'Include ASCII chart visualization',
-              default: false,
-            },
-          },
-          required: ['startDate', 'endDate'],
-        },
-      },
-      {
-        name: 'cost_trends',
-        description: 'Analyze cost trends over time with insights',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            provider: {
-              type: 'string',
-              enum: ['aws', 'openai', 'anthropic'],
-              description: 'Specific provider to analyze (optional)',
-            },
-            period: {
-              type: 'string',
-              enum: ['30d', '60d', '90d', '6m', '1y'],
-              description: 'Time period to analyze',
-              default: '30d',
-            },
-            granularity: {
-              type: 'string',
-              enum: ['daily', 'weekly', 'monthly'],
-              description: 'Data granularity',
-              default: 'daily',
-            },
-          },
-        },
-      },
-      {
-        name: 'cost_breakdown',
-        description: 'Get detailed cost breakdown by multiple dimensions',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            provider: {
-              type: 'string',
-              enum: ['aws', 'openai', 'anthropic'],
-              description: 'Specific provider to analyze (optional)',
-            },
-            startDate: {
-              type: 'string',
-              description: 'Start date in YYYY-MM-DD format',
-            },
-            endDate: {
-              type: 'string',
-              description: 'End date in YYYY-MM-DD format',
-            },
-            dimensions: {
-              type: 'array',
-              items: {
-                type: 'string',
-                enum: ['service', 'region', 'date', 'tag'],
-              },
-              description: 'Dimensions to break down costs by',
-              default: ['service'],
-            },
-            topN: {
-              type: 'number',
-              description: 'Number of top items to show',
-              default: 10,
-            },
-            threshold: {
-              type: 'number',
-              description: 'Minimum percentage threshold to include',
-            },
-          },
-          required: ['startDate', 'endDate'],
-        },
-      },
-      {
-        name: 'cost_periods',
-        description: 'Compare costs between two time periods',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            provider: {
-              type: 'string',
-              enum: ['aws', 'openai', 'anthropic'],
-              description: 'Specific provider to analyze (optional)',
-            },
-            period1: {
-              type: 'object',
-              properties: {
-                startDate: { type: 'string' },
-                endDate: { type: 'string' },
-              },
-              required: ['startDate', 'endDate'],
-            },
-            period2: {
-              type: 'object',
-              properties: {
-                startDate: { type: 'string' },
-                endDate: { type: 'string' },
-              },
-              required: ['startDate', 'endDate'],
-            },
-            comparisonType: {
-              type: 'string',
-              enum: ['absolute', 'percentage', 'both'],
-              default: 'both',
-            },
-            breakdown: {
-              type: 'boolean',
-              description: 'Include service-level breakdown',
-              default: true,
-            },
-          },
-          required: ['period1', 'period2'],
-        },
-      },
-    ];
+    return toolDefinitions.map((definition) => definition.metadata);
   }
 
   async start(): Promise<void> {
