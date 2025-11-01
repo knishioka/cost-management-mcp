@@ -2,6 +2,7 @@ export { getCostTool } from './getCosts';
 export { listProvidersTool } from './listProviders';
 export { checkBalanceTool } from './checkBalance';
 export { getOpenAICostsTool } from './getOpenAICosts';
+export { getAnthropicCostsTool } from './getAnthropicCosts';
 export { getAWSCostsTool } from './getAWSCosts';
 export { compareProvidersTool } from './compareProviders';
 export { getCostTrendsTool } from './getCostTrends';

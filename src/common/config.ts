@@ -14,6 +14,9 @@ const EnvSchema = z.object({
   // OpenAI
   OPENAI_API_KEY: z.string().optional(),
 
+  // Anthropic
+  ANTHROPIC_API_KEY: z.string().optional(),
+
   // Cache (optional)
   CACHE_TTL: z.string().transform(Number).optional(),
   CACHE_TYPE: z.enum(['memory', 'redis']).optional(),
@@ -57,6 +60,14 @@ export class Config {
           },
         };
 
+      case 'anthropic':
+        return {
+          enabled: !!this.env.ANTHROPIC_API_KEY,
+          credentials: {
+            apiKey: this.env.ANTHROPIC_API_KEY || '',
+          },
+        };
+
       default:
         throw new ConfigurationError(`Unknown provider: ${provider}`);
     }
@@ -85,7 +96,7 @@ export class Config {
   }
 
   getEnabledProviders(): string[] {
-    const providers = ['aws', 'openai'];
+    const providers = ['aws', 'openai', 'anthropic'];
     return providers.filter((provider) => {
       const config = this.getProviderConfig(provider);
       return config.enabled;
