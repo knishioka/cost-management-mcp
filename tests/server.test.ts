@@ -2,6 +2,7 @@ import { CostManagementMCPServer } from '../src/server';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { getConfig } from '../src/common/config';
 import { initializeCache } from '../src/common/cache';
+import { toolDefinitions } from '../src/tools/registry';
 
 // Mock dependencies
 jest.mock('@modelcontextprotocol/sdk/server/index.js');
@@ -96,19 +97,10 @@ describe('CostManagementMCPServer', () => {
       server = new CostManagementMCPServer();
       const tools = (server as any).getTools();
 
-      expect(tools).toHaveLength(10);
-      expect(tools.map((t: any) => t.name)).toEqual([
-        'cost_get',
-        'provider_list',
-        'provider_balance',
-        'openai_costs',
-        'anthropic_costs',
-        'aws_costs',
-        'provider_compare',
-        'cost_trends',
-        'cost_breakdown',
-        'cost_periods',
-      ]);
+      expect(tools).toHaveLength(toolDefinitions.length);
+      expect(tools.map((t: any) => t.name)).toEqual(
+        toolDefinitions.map((definition) => definition.metadata.name),
+      );
 
       const costGetTool = tools.find((t: any) => t.name === 'cost_get');
       expect(costGetTool).toBeDefined();

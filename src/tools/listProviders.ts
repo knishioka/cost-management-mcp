@@ -1,12 +1,21 @@
 import type { ProviderClient, ToolResponse } from '../common/types';
 import { logger } from '../common/utils';
+import { SUPPORTED_PROVIDERS } from '../common/providers';
 
 export async function listProvidersTool(
   providers: Map<string, ProviderClient>,
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
   const providerList = [];
 
+  const remainingProviders = new Set<string>(SUPPORTED_PROVIDERS);
+
   for (const [name, provider] of providers) {
+    if (!remainingProviders.has(name)) {
+      logger.warn(`Provider ${name} is not recognized as a supported provider`);
+    }
+
+    remainingProviders.delete(name);
+
     try {
       const isValid = await provider.validateCredentials();
       providerList.push({
@@ -25,15 +34,12 @@ export async function listProvidersTool(
     }
   }
 
-  const allProviders = ['aws', 'openai'];
-  for (const name of allProviders) {
-    if (!providers.has(name)) {
-      providerList.push({
-        name,
-        status: 'not_configured',
-        configured: false,
-      });
-    }
+  for (const name of remainingProviders) {
+    providerList.push({
+      name,
+      status: 'not_configured',
+      configured: false,
+    });
   }
 
   const response: ToolResponse = {
