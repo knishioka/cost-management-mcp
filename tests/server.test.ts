@@ -96,12 +96,13 @@ describe('CostManagementMCPServer', () => {
       server = new CostManagementMCPServer();
       const tools = (server as any).getTools();
 
-      expect(tools).toHaveLength(9);
+      expect(tools).toHaveLength(10);
       expect(tools.map((t: any) => t.name)).toEqual([
         'cost_get',
         'provider_list',
         'provider_balance',
         'openai_costs',
+        'anthropic_costs',
         'aws_costs',
         'provider_compare',
         'cost_trends',
