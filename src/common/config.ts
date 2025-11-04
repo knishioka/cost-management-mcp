@@ -19,7 +19,7 @@ const EnvSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
 
   // Cache (optional)
-  CACHE_TTL: z.string().transform(Number).optional(),
+  CACHE_TTL: z.coerce.number().optional(),
   CACHE_TYPE: z.enum(['memory', 'redis']).optional(),
   REDIS_URL: z.string().optional(),
 
@@ -27,7 +27,7 @@ const EnvSchema = z.object({
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 
   // MCP Server
-  MCP_SERVER_PORT: z.string().transform(Number).default('3000'),
+  MCP_SERVER_PORT: z.coerce.number().default(3000),
 });
 
 export class Config {
@@ -36,7 +36,7 @@ export class Config {
   constructor() {
     const result = EnvSchema.safeParse(process.env);
     if (!result.success) {
-      throw new ConfigurationError('Invalid environment configuration', result.error.errors);
+      throw new ConfigurationError('Invalid environment configuration', result.error.issues);
     }
     this.env = result.data;
   }

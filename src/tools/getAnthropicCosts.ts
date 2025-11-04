@@ -1,7 +1,19 @@
 import { z } from 'zod';
-import type { ProviderClient, ToolResponse, CostBreakdown } from '../common/types';
+import type {
+  ProviderClient,
+  ToolResponse,
+  CostBreakdown,
+  CostQueryParams,
+  UnifiedCostData,
+} from '../common/types';
 import { parseDate, logger } from '../common/utils';
 import { ValidationError } from '../common/errors';
+
+type UsageDataParams = Omit<CostQueryParams, 'provider'>;
+
+type AnthropicProviderClient = ProviderClient & {
+  getUsageData?: (params: UsageDataParams) => Promise<UnifiedCostData>;
+};
 
 const GetAnthropicCostsSchema = z.object({
   startDate: z.string(),
@@ -17,7 +29,7 @@ export async function getAnthropicCostsTool(
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
   const validation = GetAnthropicCostsSchema.safeParse(args);
   if (!validation.success) {
-    throw new ValidationError('Invalid parameters', validation.error.errors);
+    throw new ValidationError('Invalid parameters', validation.error.issues);
   }
 
   const params = validation.data;
@@ -37,10 +49,10 @@ export async function getAnthropicCostsTool(
     logger.debug('Fetching Anthropic costs', params);
 
     // Use cost report API for actual billing data, or usage report for token-level details
-    let costData;
-    if (params.useUsageReport && 'getUsageData' in provider) {
-      // Type assertion since ProviderClient interface doesn't include getUsageData
-      const anthropicProvider = provider as any;
+    let costData: UnifiedCostData;
+    const anthropicProvider = provider as AnthropicProviderClient;
+
+    if (params.useUsageReport && typeof anthropicProvider.getUsageData === 'function') {
       costData = await anthropicProvider.getUsageData({
         startDate,
         endDate,
