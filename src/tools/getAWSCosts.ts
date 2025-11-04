@@ -18,7 +18,7 @@ export async function getAWSCostsTool(
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
   const validation = GetAWSCostsSchema.safeParse(args);
   if (!validation.success) {
-    throw new ValidationError('Invalid parameters', validation.error.errors);
+    throw new ValidationError('Invalid parameters', validation.error.issues);
   }
 
   const params = validation.data;

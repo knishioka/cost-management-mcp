@@ -17,7 +17,7 @@ export async function getCostTool(
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
   const validation = GetCostSchema.safeParse(args);
   if (!validation.success) {
-    throw new ValidationError('Invalid parameters', validation.error.errors);
+    throw new ValidationError('Invalid parameters', validation.error.issues);
   }
 
   const params = validation.data;
@@ -45,10 +45,14 @@ export async function getCostTool(
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            success: true,
-            data: costData,
-          }, null, 2),
+          text: JSON.stringify(
+            {
+              success: true,
+              data: costData,
+            },
+            null,
+            2,
+          ),
         },
       ],
     };
@@ -76,10 +80,7 @@ export async function getCostTool(
     }
   }
 
-  const totalCost = allCosts.reduce(
-    (sum, data) => sum + data.costs.total,
-    0,
-  );
+  const totalCost = allCosts.reduce((sum, data) => sum + data.costs.total, 0);
 
   const response: ToolResponse = {
     success: true,

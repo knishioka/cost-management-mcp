@@ -12,7 +12,7 @@ export async function checkBalanceTool(
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
   const validation = CheckBalanceSchema.safeParse(args);
   if (!validation.success) {
-    throw new ValidationError('Invalid parameters', validation.error.errors);
+    throw new ValidationError('Invalid parameters', validation.error.issues);
   }
 
   const { provider: providerName } = validation.data;

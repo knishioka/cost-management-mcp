@@ -13,11 +13,13 @@ import type { OpenAIProviderConfig, OpenAIUsageResponse } from './types';
 
 export class OpenAICostClient implements ProviderClient {
   private client: OpenAI;
+  private readonly apiKey: string;
   private cache = getCacheOrDefault();
 
   constructor(config: OpenAIProviderConfig) {
+    this.apiKey = config.apiKey;
     this.client = new OpenAI({
-      apiKey: config.apiKey,
+      apiKey: this.apiKey,
     });
   }
 
@@ -106,7 +108,7 @@ export class OpenAICostClient implements ProviderClient {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${this.client.apiKey}`,
+          Authorization: `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
       });

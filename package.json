@@ -59,8 +59,8 @@
     "@aws-sdk/client-cost-explorer": "^3.922.0",
     "dotenv": "^17.2.3",
     "node-cache": "^5.1.2",
-    "openai": "^5.3.0",
-    "zod": "^3.25.63"
+    "openai": "^6.8.0",
+    "zod": "^4.1.12"
   },
   "lint-staged": {
     "*.ts": [
