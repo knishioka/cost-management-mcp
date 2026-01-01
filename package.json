@@ -41,26 +41,26 @@
   },
   "type": "commonjs",
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "^1.20.2",
+    "@modelcontextprotocol/sdk": "^1.25.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.9.2",
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/eslint-plugin": "^8.51.0",
     "@typescript-eslint/parser": "^8.34.0",
-    "eslint": "^9.39.0",
+    "eslint": "^9.39.2",
     "husky": "^9.1.7",
     "jest": "^30.2.0",
-    "lint-staged": "^16.2.6",
-    "prettier": "^3.5.3",
-    "ts-jest": "^29.4.5",
-    "tsx": "^4.20.6",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.4",
+    "ts-jest": "^29.4.6",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@aws-sdk/client-cost-explorer": "^3.922.0",
+    "@aws-sdk/client-cost-explorer": "^3.958.0",
     "dotenv": "^17.2.3",
     "node-cache": "^5.1.2",
-    "openai": "^6.8.0",
-    "zod": "^4.1.12"
+    "openai": "^6.15.0",
+    "zod": "^4.3.4"
   },
   "lint-staged": {
     "*.ts": [
