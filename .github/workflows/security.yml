@@ -5,68 +5,76 @@ on:
     # Run at 2 AM UTC every Monday
     - cron: '0 2 * * 1'
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   dependency-scan:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v5
-    
-    - name: Use Node.js 20.x
-      uses: actions/setup-node@v6
-      with:
-        node-version: 20.x
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run npm audit
-      run: npm audit --production
-      continue-on-error: true
-    
-    - name: Run Snyk to check for vulnerabilities
-      uses: snyk/actions/node@master
-      continue-on-error: true
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - uses: actions/checkout@v5
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --production
+        continue-on-error: true
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   secret-scan:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-    
-    - name: Detect secrets with Trufflehog
-      uses: trufflesecurity/trufflehog@main
-      with:
-        path: ./
-        base: ${{ github.event.repository.default_branch }}
-        head: HEAD
-        extra_args: --only-verified
-    
-    - name: Check for hardcoded secrets
-      run: |
-        # Check for common patterns
-        patterns=(
-          "sk-[a-zA-Z0-9]{48}"  # OpenAI
-          "AKIA[0-9A-Z]{16}"     # AWS Access Key
-          "-----BEGIN.*KEY-----" # Private keys
-          "token.*[:=].*['\"][a-zA-Z0-9]{20,}" # Generic tokens
-        )
-        
-        for pattern in "${patterns[@]}"; do
-          if git grep -E "$pattern" -- ':(exclude).env*' ':(exclude)*.example' ':(exclude)test*' ':(exclude)*.test.*' ':(exclude)test-*' ':(exclude)*.md'; then
-            echo "WARNING: Potential secret found matching pattern: $pattern"
-            exit 1
-          fi
-        done
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Detect secrets with Trufflehog (diff scan)
+        if: github.event_name != 'schedule'
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+
+      - name: Detect secrets with Trufflehog (full scan)
+        if: github.event_name == 'schedule'
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          extra_args: --only-verified
+
+      - name: Check for hardcoded secrets
+        run: |
+          # Check for common patterns
+          patterns=(
+            "sk-[a-zA-Z0-9]{48}"  # OpenAI
+            "AKIA[0-9A-Z]{16}"     # AWS Access Key
+            "-----BEGIN.*KEY-----" # Private keys
+            "token.*[:=].*['\"][a-zA-Z0-9]{20,}" # Generic tokens
+          )
+
+          for pattern in "${patterns[@]}"; do
+            if git grep -E "$pattern" -- ':(exclude).env*' ':(exclude)*.example' ':(exclude)test*' ':(exclude)*.test.*' ':(exclude)test-*' ':(exclude)*.md'; then
+              echo "WARNING: Potential secret found matching pattern: $pattern"
+              exit 1
+            fi
+          done
 
   codeql:
     name: CodeQL Analysis
@@ -75,18 +83,18 @@ jobs:
       actions: read
       contents: read
       security-events: write
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v5
-    
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v4
-      with:
-        languages: javascript
-    
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v4
-    
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v4
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: javascript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v4
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
