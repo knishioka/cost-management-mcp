@@ -65,3 +65,19 @@ private/
 test-*.js
 interactive-*.js
 analyze-*.js
+# --- appended by workspace-ds-pm/templates/repo-baseline ---
+.env.*
+!.env.example
+!.env.sample
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
+*~
+__pycache__/
+*.pyc
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+out/
+
+# Re-allow Claude Code shared settings (overrides earlier *.json rule)
+!.claude/settings.json
