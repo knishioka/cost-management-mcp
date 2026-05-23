@@ -213,6 +213,9 @@ Example usage:
 - npm or yarn
 - Active accounts with the cloud providers you want to monitor
 
+CI currently verifies Node.js 18.x, 20.x, and 22.x. Node.js 20.x is the primary
+lane for coverage upload and representative build checks.
+
 ### Steps
 
 1. Clone the repository:
@@ -792,7 +795,9 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ### Build & Test
 
 - **CI/CD**: Automated testing on push and PR
-- **Node Support**: 18.x and 20.x
+- **Node Support**: Runtime floor is Node.js 18+. CI verifies 18.x, 20.x, and
+  22.x with 20.x as the primary lane for coverage upload and representative
+  build checks.
 - **Coverage**: Comprehensive test suite with coverage reporting
 
 ### Security
@@ -875,6 +880,15 @@ Claudeでの使用例：
 - クレジット期限前のアラート
 
 ### インストール
+
+#### 前提条件
+
+- Node.js 18 以上
+- npm または yarn
+- 監視対象クラウドプロバイダーのアカウント
+
+CI は現在 Node.js 18.x / 20.x / 22.x を検証しており、20.x を
+カバレッジアップロードおよび代表的なビルド検証用の主要レーンとして扱います。
 
 ```bash
 # リポジトリのクローン
@@ -1020,7 +1034,8 @@ npm run typecheck
 ### ビルド＆テスト
 
 - **CI/CD**: プッシュとPR時の自動テスト
-- **Nodeサポート**: 18.xと20.x
+- **Node サポート**: 動作要件（runtime floor）は Node.js 18+。CI は 18.x / 20.x / 22.x を検証し、
+  20.x を主要なカバレッジアップロードおよびビルド検証用レーン（primary coverage lane）として扱います
 - **カバレッジ**: カバレッジレポート付きの包括的なテストスイート
 
 ### セキュリティ
