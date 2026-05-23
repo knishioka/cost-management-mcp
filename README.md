@@ -796,7 +796,8 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 - **CI/CD**: Automated testing on push and PR
 - **Node Support**: Runtime floor is Node.js 18+. CI verifies 18.x, 20.x, and
-  22.x with 20.x as the primary coverage lane.
+  22.x with 20.x as the primary lane for coverage upload and representative
+  build checks.
 - **Coverage**: Comprehensive test suite with coverage reporting
 
 ### Security
@@ -879,6 +880,15 @@ Claudeでの使用例：
 - クレジット期限前のアラート
 
 ### インストール
+
+#### 前提条件
+
+- Node.js 18 以上
+- npm または yarn
+- 監視対象クラウドプロバイダーのアカウント
+
+CI は現在 Node.js 18.x / 20.x / 22.x を検証しており、20.x を
+カバレッジアップロードおよび代表的なビルド検証用の主要レーンとして扱います。
 
 ```bash
 # リポジトリのクローン
@@ -1024,8 +1034,8 @@ npm run typecheck
 ### ビルド＆テスト
 
 - **CI/CD**: プッシュとPR時の自動テスト
-- **Nodeサポート**: runtime floor は Node.js 18+。CI は 18.x / 20.x / 22.x を検証し、
-  20.x を primary coverage lane として扱います
+- **Node サポート**: 動作要件（runtime floor）は Node.js 18+。CI は 18.x / 20.x / 22.x を検証し、
+  20.x を主要なカバレッジアップロードおよびビルド検証用レーン（primary coverage lane）として扱います
 - **カバレッジ**: カバレッジレポート付きの包括的なテストスイート
 
 ### セキュリティ
