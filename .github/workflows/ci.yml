@@ -2,88 +2,146 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x, 24.x]
-    
+
     steps:
-    - uses: actions/checkout@v6
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v6
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Check code formatting
-      run: npm run lint
-    
-    - name: Run type checking
-      run: npm run typecheck
-    
-    - name: Run tests
-      run: npm test -- --coverage --ci
-      env:
-        NODE_ENV: test
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      if: matrix.node-version == '20.x'
-      with:
-        file: ./coverage/lcov.info
-        fail_ci_if_error: false
+      - uses: actions/checkout@v6
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check code formatting
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test -- --coverage --ci
+        env:
+          NODE_ENV: test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        if: matrix.node-version == '20.x'
+        with:
+          file: ./coverage/lcov.info
+          fail_ci_if_error: false
 
   build:
     runs-on: ubuntu-latest
     needs: test
-    
+
     steps:
-    - uses: actions/checkout@v6
-    
-    - name: Use Node.js 20.x
-      uses: actions/setup-node@v6
-      with:
-        node-version: 20.x
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build project
-      run: npm run build
-    
-    - name: Check build output
-      run: |
-        if [ ! -f "dist/index.js" ]; then
-          echo "Build failed: dist/index.js not found"
-          exit 1
-        fi
+      - uses: actions/checkout@v6
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Check build output
+        run: |
+          if [ ! -f "dist/index.js" ]; then
+            echo "Build failed: dist/index.js not found"
+            exit 1
+          fi
 
   security:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v6
-    
-    - name: Run security audit
-      run: npm audit --production
-      continue-on-error: true
-    
-    - name: Check for secrets
-      uses: trufflesecurity/trufflehog@main
-      with:
-        path: ./
-        base: ${{ github.event.repository.default_branch }}
-        head: HEAD
-        extra_args: --only-verified
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run security audit
+        run: npm audit --production
+        continue-on-error: true
+
+      - name: Prepare TruffleHog scan refs
+        id: trufflehog-refs
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BASE: ${{ github.event.before }}
+          PUSH_HEAD: ${{ github.sha }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          null_sha='0000000000000000000000000000000000000000'
+          scan_mode='diff'
+          base=''
+          head=''
+
+          case "$EVENT_NAME" in
+            push)
+              base="$PUSH_BASE"
+              head="$PUSH_HEAD"
+              ;;
+            pull_request)
+              base="$PR_BASE"
+              head="$PR_HEAD"
+              ;;
+            *)
+              scan_mode='full'
+              ;;
+          esac
+
+          if [[ "$scan_mode" == 'diff' ]]; then
+            if [[ -z "$base" || -z "$head" || "$base" == "$head" || "$base" == "$null_sha" || "$head" == "$null_sha" ]]; then
+              echo "Falling back to full TruffleHog scan because diff refs are not comparable for $EVENT_NAME."
+              scan_mode='full'
+              base=''
+              head=''
+            fi
+          fi
+
+          {
+            echo "scan_mode=$scan_mode"
+            echo "base=$base"
+            echo "head=$head"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check for secrets (diff scan)
+        if: steps.trufflehog-refs.outputs.scan_mode == 'diff'
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ steps.trufflehog-refs.outputs.base }}
+          head: ${{ steps.trufflehog-refs.outputs.head }}
+          extra_args: --only-verified
+
+      - name: Check for secrets (fallback full scan)
+        if: steps.trufflehog-refs.outputs.scan_mode == 'full'
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ''
+          head: HEAD
+          extra_args: --only-verified
